@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
 
@@ -9,11 +10,21 @@ export class FleetService {
   constructor(private http: HttpClient) {}
 
   getAssetTypes(): Observable<any[]> {
-    return this.http.get<any[]>(`${API_BASE}/AssetTypes`);
+    return this.http.get<any[]>(`${API_BASE}/AssetTypes`).pipe(
+      catchError((err) => {
+        console.error('Failed to load asset types', err);
+        return of([] as any[]);
+      })
+    );
   }
 
   getServiceCenters(): Observable<any[]> {
-    return this.http.get<any[]>(`${API_BASE}/ServiceCenters`);
+    return this.http.get<any[]>(`${API_BASE}/ServiceCenters`).pipe(
+      catchError((err) => {
+        console.error('Failed to load service centers', err);
+        return of([] as any[]);
+      })
+    );
   }
 
   createAppointment(payload: any) {

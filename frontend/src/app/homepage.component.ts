@@ -1,7 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
-import { FormBuilder, ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -14,8 +13,7 @@ import { ServiceCenter } from './models/service-center';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatNativeDateModule],
-  template: `
+  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatNativeDateModule],
   template: `
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header" role="banner">
@@ -75,7 +73,7 @@ import { ServiceCenter } from './models/service-center';
         </mat-form-field>
 
         <div class="actions">
-          <button type="submit" class="btn-primary" [disabled]="form.invalid" aria-disabled="{{form.invalid}}">Save Appointment</button>
+          <button type="submit" class="btn-primary" [disabled]="form.invalid" [attr.aria-disabled]="form.invalid">Save Appointment</button>
         </div>
       </form>
 
@@ -85,16 +83,62 @@ import { ServiceCenter } from './models/service-center';
 
   <footer class="site-footer" role="contentinfo">
     <div class="site-footer-inner">
-      <p>© <span id="year"></span> FleetHub — Built with care.</p>
+      <p>© {{ year }} FleetHub — Built with care.</p>
     </div>
   </footer>
   `
+})
+export class HomepageComponent implements OnInit {
+  form: FormGroup;
+  assetTypes: AssetType[] = [];
+  centers: ServiceCenter[] = [];
+  saved = false;
+  year = new Date().getFullYear();
+
+  constructor(private fb: FormBuilder, private fleet: FleetService) {
+    this.form = this.fb.group({
+      assetTypeId: ['', Validators.required],
+      serviceCenterId: ['', Validators.required],
+      appointmentDateTime: [null, Validators.required],
+      notes: ['']
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadLookups();
+  }
+
+  private loadLookups(): void {
+    this.fleet.getAssetTypes().subscribe((a) => (this.assetTypes = a || []));
+    this.fleet.getServiceCenters().subscribe((s) => (this.centers = s || []));
+  }
+
+  // For local dev: provide sensible fallbacks when API is unavailable
+  private ensureLocalFallbacks(): void {
+    if (!this.assetTypes || this.assetTypes.length === 0) {
+      this.assetTypes = [
+        { id: 1, name: 'Truck' },
+        { id: 2, name: 'Van' },
+        { id: 3, name: 'Sedan' }
+      ];
+    }
+
+    if (!this.centers || this.centers.length === 0) {
+      this.centers = [
+        { id: 1, name: 'Central Service', city: 'Springfield' },
+        { id: 2, name: 'Northside Service', city: 'Shelbyville' }
+      ];
+    }
+  }
+
+  submit(): void {
     if (this.form.invalid) return;
-    const raw = this.form.value;
+    const raw = this.form.value as any;
+    const appointmentDate = raw.appointmentDateTime instanceof Date ? raw.appointmentDateTime : new Date(raw.appointmentDateTime);
     const payload = {
       assetTypeId: Number(raw.assetTypeId),
       serviceCenterId: Number(raw.serviceCenterId),
-      appointmentDateTime: (raw.appointmentDateTime as Date).toISOString(),
+      appointmentDateTime: appointmentDate.toISOString(),
       notes: raw.notes
     };
 
