@@ -7,10 +7,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 // Configure DB
-var connectionString = builder.Configuration.GetConnectionString("FleetDatabase") ??
-                       Environment.GetEnvironmentVariable("FLEET_CONNECTION_STRING") ??
-                       "Server=localhost\\MSSQLSERVER01;Database=FleetDb;Trusted_Connection=True;TrustServerCertificate=True;";
-builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlServer(connectionString));
+if (builder.Environment.IsDevelopment())
+{
+    // Use in-memory DB for local development to avoid needing a full SQL Server instance
+    builder.Services.AddDbContext<FleetDbContext>(options => options.UseInMemoryDatabase("DevFleetDb"));
+}
+else
+{
+    var connectionString = builder.Configuration.GetConnectionString("FleetDatabase") ??
+                           Environment.GetEnvironmentVariable("FLEET_CONNECTION_STRING") ??
+                           "Server=localhost\\MSSQLSERVER01;Database=FleetDb;Trusted_Connection=True;TrustServerCertificate=True;";
+    builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlServer(connectionString));
+}
 
 // DI for repositories
 builder.Services.AddScoped<IFleetRepository, FleetRepository>();

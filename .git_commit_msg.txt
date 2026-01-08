@@ -1,0 +1,1 @@
+Add Playwright e2e test: homepage
