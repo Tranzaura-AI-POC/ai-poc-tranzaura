@@ -322,9 +322,9 @@ export class HomepageComponent implements OnInit {
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement | null;
     if (!target) return;
-    // If the click is inside any select wrapper, do nothing (keeps its list open)
+    // if the click is inside any select wrapper, ignore so existing lists stay open
     if (target.closest && target.closest('.select-wrapper')) return;
-    // Otherwise close all open dropdown lists
+    // otherwise close all custom dropdowns
     this.showAssetTypeList = false;
     this.showCenterList = false;
     this.showMakeList = false;
