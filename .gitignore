@@ -14,6 +14,11 @@
 # Logs
 *.log
 
+# Database files
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+
 # IDE
 .idea/
 frontend/node_modules/
