@@ -11,7 +11,16 @@ namespace FleetManagement.Data
             var context = scope.ServiceProvider.GetRequiredService<FleetDbContext>();
             try
             {
-                context.Database.Migrate();
+                // Try migrations first (preferred for SQL Server with migration files)
+                if (context.Database.GetPendingMigrations().Any())
+                {
+                    context.Database.Migrate();
+                }
+                else
+                {
+                    // If no migrations exist, ensure database is created (for SQLite dev scenarios)
+                    context.Database.EnsureCreated();
+                }
             }
             catch (Exception ex)
             {
