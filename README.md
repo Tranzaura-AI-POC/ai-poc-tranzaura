@@ -123,4 +123,12 @@ License
 
 - This repository is for demonstration purposes; add your preferred license if you intend to publish or reuse the code.
 
+# Security precautions (applied)
+
+- **HTTPS / HSTS enforced in production**: the backend enables HTTPS redirection and HSTS when running in a Production environment.
+- **Restricted CORS**: a production CORS policy is configured. Set the `FRONTEND_ORIGIN` environment variable (or `FrontendOrigin` configuration) to the exact frontend origin to allow cross-origin requests in production.
+- **Security headers**: a middleware adds conservative security headers (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy). Consider moving CSP management to your CDN/edge for finer control.
+- **Safe error handling**: unhandled exceptions return a generic error message; detailed exception data is logged only to the app's telemetry/log store.
+- **Recommendations (not yet automated)**: use Azure Key Vault + Managed Identity for secrets, persist DataProtection keys to blob/KeyVault for multi-instance scenarios, run `dotnet list package --vulnerable` and `npm audit`, and host the frontend behind a CDN or Azure Static Web Apps with a WAF in front of the API (Front Door/Application Gateway + WAF).
+
 # ai-poc-tranzaura
