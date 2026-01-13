@@ -44,6 +44,25 @@ namespace FleetManagement.Data
                 }
             }
 
+            // Ensure Users table exists for environments where DB was created partially.
+            try
+            {
+                context.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID(N'dbo.Users', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[Users](
+        [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        [Username] NVARCHAR(200) NOT NULL,
+        [PasswordHash] NVARCHAR(MAX) NOT NULL,
+        [Role] NVARCHAR(100) NULL
+    );
+END");
+            }
+            catch
+            {
+                // ignore creation failures here; seeding will attempt and surface errors
+            }
+
             if (!context.AssetTypes.Any())
             {
                 context.AssetTypes.AddRange(new AssetType { Name = "Truck" },
@@ -60,6 +79,59 @@ namespace FleetManagement.Data
                     new ServiceCenter { Name = "Northside Service", Address = "55 North Rd", City = "Shelbyville", State = "CA", Zip = "90002" },
                     new ServiceCenter { Name = "Eastfield Garage", Address = "200 East Ave", City = "Ogden", State = "CA", Zip = "90003" }
                 );
+            }
+
+            // Seed a local admin user for development/testing if no users exist.
+            if (context.Users == null)
+            {
+                // If Users DbSet is not available for some reason, skip seeding users.
+            }
+            else
+            {
+                try
+                {
+                    if (!context.Users.Any())
+                    {
+                        // Default admin credentials: username 'admin', password 'Password123!'.
+                        // Change this in production and/or remove the seeded account.
+                        var pwHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
+                        context.Users.Add(new FleetManagement.Models.User { Username = "admin", PasswordHash = pwHash, Role = "Admin" });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // If the Users table does not exist, create it directly and then seed.
+                    var msg = ex.Message ?? string.Empty;
+                    if (msg.Contains("Invalid object name 'Users'") || msg.Contains("doesn't exist") || msg.Contains("Invalid object name"))
+                    {
+                        try
+                        {
+                            // Create a minimal Users table compatible with the User model.
+                            context.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID(N'dbo.Users', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[Users](
+        [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        [Username] NVARCHAR(200) NOT NULL,
+        [PasswordHash] NVARCHAR(MAX) NOT NULL,
+        [Role] NVARCHAR(100) NULL
+    );
+END");
+
+                            var pwHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
+                            context.Users.Add(new FleetManagement.Models.User { Username = "admin", PasswordHash = pwHash, Role = "Admin" });
+                        }
+                        catch (Exception inner)
+                        {
+                            // If even creation fails, surface the original error.
+                            throw new Exception($"Failed to create Users table: {inner.Message}", inner);
+                        }
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
 
             context.SaveChanges();

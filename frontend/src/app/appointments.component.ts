@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FleetService } from './fleet.service';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-appointments',
@@ -62,7 +65,7 @@ import { FleetService } from './fleet.service';
   </section>
   `
 })
-export class AppointmentsComponent implements OnInit {
+export class AppointmentsComponent implements OnInit, OnDestroy {
   appointments: any[] = [];
   assetTypes: any[] = [];
   serviceCenters: any[] = [];
@@ -70,20 +73,41 @@ export class AppointmentsComponent implements OnInit {
   editingId: number | null = null;
   editModel: any = {};
 
-  constructor(private fleet: FleetService) {}
+  private routerSub: Subscription | null = null;
+
+  constructor(private fleet: FleetService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadLookups();
     this.loadAppointments();
+    // If route reuse or navigation returns to this component, reload appointments
+    this.routerSub = this.router.events.subscribe(evt => {
+      if (evt instanceof NavigationEnd) {
+        if (evt.urlAfterRedirects && evt.urlAfterRedirects.includes('/appointments')) {
+          this.loadAppointments();
+        }
+      }
+    });
+
+    // Extra reload shortly after init to avoid a startup race where auth
+    // headers or other providers may not be ready yet on first call.
+    setTimeout(() => this.loadAppointments(), 250);
+  }
+
+  ngOnDestroy(): void {
+    if (this.routerSub) { this.routerSub.unsubscribe(); this.routerSub = null; }
   }
 
   loadLookups(): void {
-    this.fleet.getAssetTypes().subscribe(a => (this.assetTypes = a || []));
-    this.fleet.getServiceCenters().subscribe(s => (this.serviceCenters = s || []));
+    this.fleet.getAssetTypes().subscribe(a => { this.assetTypes = a || []; try { this.cdr.detectChanges(); } catch {} });
+    this.fleet.getServiceCenters().subscribe(s => { this.serviceCenters = s || []; try { this.cdr.detectChanges(); } catch {} });
   }
 
   loadAppointments(): void {
-    this.fleet.getAppointments().subscribe(a => (this.appointments = a || []));
+    this.fleet.getAppointments().subscribe(a => {
+      this.appointments = a || [];
+      try { this.cdr.detectChanges(); } catch (e) { console.warn('detectChanges failed', e); }
+    });
   }
 
   startEdit(ap: any): void {
