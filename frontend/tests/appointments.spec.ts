@@ -6,7 +6,7 @@ test('appointments page loads and shows appointments grid', async ({ page }) => 
 
   // Look for any of the appointments selectors used in the app
   const gridOrCards = page.locator('.appointments-grid, .appointment-card');
-  const title = page.locator('text=Appointments');
+  const title = page.locator('#appointments-heading');
   // Pass if either the grid/cards are present or the page contains the heading text
   if ((await gridOrCards.count()) > 0) {
     await expect(gridOrCards.first()).toBeVisible({ timeout: 5000 });
