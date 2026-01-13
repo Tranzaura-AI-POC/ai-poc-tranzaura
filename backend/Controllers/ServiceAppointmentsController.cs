@@ -1,18 +1,21 @@
 using FleetManagement.Models;
 using FleetManagement.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 
 namespace FleetManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ServiceAppointmentsController : ControllerBase
     {
         private readonly IFleetRepository _repo;
         public ServiceAppointmentsController(IFleetRepository repo) => _repo = repo;
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get()
         {
             var items = await _repo.GetAppointmentsAsync();
@@ -20,6 +23,7 @@ namespace FleetManagement.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Editor,Admin")]
         public async Task<IActionResult> Post([FromBody] ServiceAppointment appointment)
         {
             if (appointment == null)
@@ -30,6 +34,7 @@ namespace FleetManagement.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Editor,Admin")]
         public async Task<IActionResult> Put(int id, [FromBody] ServiceAppointment appointment)
         {
             if (appointment == null || id != appointment.Id)
@@ -41,6 +46,7 @@ namespace FleetManagement.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Editor,Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var ok = await _repo.DeleteAppointmentAsync(id);

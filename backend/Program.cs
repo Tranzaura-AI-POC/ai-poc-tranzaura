@@ -2,35 +2,28 @@ using FleetManagement.Data;
 using FleetManagement.Middlewares;
 using FleetManagement.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Azure.Identity;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
-// Configure DB
-// Prefer an explicitly configured FleetDatabase connection string (or FLEET_CONNECTION_STRING env var)
-// so the app can connect to an existing SQL Server instance even in Development.
-var configuredConnection = builder.Configuration.GetConnectionString("FleetDatabase") ??
-                          Environment.GetEnvironmentVariable("FLEET_CONNECTION_STRING");
+// Optional: load secrets from Azure Key Vault when KEYVAULT_URI or KeyVault:Uri is provided.
+var keyVaultUri = builder.Configuration["KeyVault:Uri"] ?? Environment.GetEnvironmentVariable("KEYVAULT_URI");
+if (!string.IsNullOrEmpty(keyVaultUri))
+{
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+}
 
-if (!string.IsNullOrEmpty(configuredConnection))
-{
-    builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlServer(configuredConnection));
-}
-else if (builder.Environment.IsDevelopment())
-{
-    // No configured SQL connection for local dev — use a file-backed SQLite DB
-    // so data persists across restarts during development.
-    var sqliteConnection = "Data Source=fleet.db";
-    builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlite(sqliteConnection));
-}
-else
-{
-    // Production / non-development fallback: attempt local SQL Server instance by default.
-    var connectionString = builder.Configuration.GetConnectionString("FleetDatabase") ??
-                           Environment.GetEnvironmentVariable("FLEET_CONNECTION_STRING") ??
-                           "Server=localhost\\MSSQLSERVER01;Database=FleetDb;Trusted_Connection=True;TrustServerCertificate=True;";
-    builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlServer(connectionString));
-}
+// Configure DB
+// Use configured FleetDatabase connection string or environment variable.
+// If none provided, fall back to the SQL Server specified by the team for user storage.
+var connectionString = builder.Configuration.GetConnectionString("FleetDatabase")
+                       ?? Environment.GetEnvironmentVariable("FLEET_CONNECTION_STRING")
+                      ?? "Server=localhost\\MSSQLSERVER01;Database=FleetDb;Trusted_Connection=True;TrustServerCertificate=True;";
+builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlServer(connectionString));
 
 // DI for repositories
 builder.Services.AddScoped<IFleetRepository, FleetRepository>();
@@ -38,6 +31,41 @@ builder.Services.AddScoped<IFleetRepository, FleetRepository>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// Authentication (Azure AD / JWT Bearer)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // If Azure AD is configured, use the authority/audience; otherwise use local symmetric key for dev.
+        var azureClient = builder.Configuration["AzureAd:ClientId"] ?? builder.Configuration["AzureAd:Audience"];
+        if (!string.IsNullOrEmpty(azureClient))
+        {
+            var authority = builder.Configuration["AzureAd:Authority"] ??
+                            ($"https://login.microsoftonline.com/{builder.Configuration["AzureAd:TenantId"]}");
+            options.Authority = authority;
+            options.Audience = azureClient;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                RoleClaimType = "roles"
+            };
+        }
+        else
+        {
+            // Local symmetric key
+            var key = builder.Configuration["LocalJwt:Key"] ?? Environment.GetEnvironmentVariable("LOCAL_JWT_KEY") ?? "dev-local-key-change-me";
+            var issuer = builder.Configuration["LocalJwt:Issuer"] ?? "fleet-local";
+            var audience = builder.Configuration["LocalJwt:Audience"] ?? "fleet-local-audience";
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+                ValidAudience = audience,
+                IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(key)),
+                RoleClaimType = "roles"
+            };
+        }
+    });
+builder.Services.AddAuthorization();
 // Enable CORS for local frontend (http://127.0.0.1:4200)
 // CORS: provide a strict production-origin policy via FRONTEND_ORIGIN env var or configuration.
 builder.Services.AddCors(options =>
@@ -63,25 +91,22 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Seed DB for in-memory or when explicitly requested.
-// If a configured SQL connection is provided, assume the database already
-// exists and contains data; skip the seeding/migration step to avoid
-// attempting schema changes against a production DB at startup.
-var skipSeeding = !string.IsNullOrEmpty(configuredConnection);
-if (!skipSeeding)
+// Ensure the database schema is created/migrated and seed data is applied.
+// We run migrations/EnsureCreated and seed data so the SQL DB contains the
+// necessary tables (including `Users`). This will apply to the configured
+// SQL Server (development or production) — adjust if you want different
+// behaviour per environment.
+using (var scope = app.Services.CreateScope())
 {
-    using (var scope = app.Services.CreateScope())
+    var services = scope.ServiceProvider;
+    try
     {
-        var services = scope.ServiceProvider;
-        try
-        {
-            SeedData.Initialize(services);
-        }
-        catch (Exception ex)
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred seeding the DB.");
-        }
+        SeedData.Initialize(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred seeding the DB.");
     }
 }
 
@@ -90,6 +115,12 @@ app.UseMiddleware<FleetManagement.Middlewares.SecurityHeadersMiddleware>();
 
 if (app.Environment.IsProduction())
 {
+    // Fail fast if required production configuration is missing
+    var prodOrigin = builder.Configuration["FrontendOrigin"] ?? Environment.GetEnvironmentVariable("FRONTEND_ORIGIN");
+    if (string.IsNullOrEmpty(prodOrigin))
+    {
+        throw new InvalidOperationException("Production requires FRONTEND_ORIGIN configuration to be set.");
+    }
     // Enforce HSTS and HTTPS in production.
     app.UseHsts();
     app.UseHttpsRedirection();
@@ -106,6 +137,8 @@ else
     }
 }
 app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
 app.Run();
 
 

@@ -12,5 +12,6 @@ namespace FleetManagement.Data
         public DbSet<AssetType>? AssetTypes { get; set; }
         public DbSet<ServiceCenter>? ServiceCenters { get; set; }
         public DbSet<ServiceAppointment>? ServiceAppointments { get; set; }
+        public DbSet<FleetManagement.Models.User>? Users { get; set; }
     }
 }
