@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Simplified Tranzaura logo: transparent background, white text for use on brand-orange hero -->
+<svg viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tranzaura logo">
+  <title>Tranzaura</title>
+  <rect width="300" height="80" fill="transparent" />
+  <g fill="#ffffff" font-family="Poppins, Arial, sans-serif" font-weight="700">
+    <text x="24" y="52" font-size="28">Tranzaura</text>
+  </g>
+</svg>

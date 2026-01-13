@@ -39,8 +39,24 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 // Enable CORS for local frontend (http://127.0.0.1:4200)
+// CORS: provide a strict production-origin policy via FRONTEND_ORIGIN env var or configuration.
 builder.Services.AddCors(options =>
 {
+    var prodOrigin = builder.Configuration["FrontendOrigin"] ?? Environment.GetEnvironmentVariable("FRONTEND_ORIGIN");
+
+    options.AddPolicy("Production", policy =>
+    {
+        if (!string.IsNullOrEmpty(prodOrigin))
+        {
+            policy.WithOrigins(prodOrigin).AllowAnyHeader().AllowAnyMethod();
+        }
+        else
+        {
+            // If no production origin configured, avoid open CORS in non-dev environments.
+            policy.WithOrigins("http://127.0.0.1:4200", "http://localhost:4200").AllowAnyHeader().AllowAnyMethod();
+        }
+    });
+
     options.AddPolicy("LocalDev",
         policy => policy.WithOrigins("http://127.0.0.1:4200", "http://localhost:4200").AllowAnyHeader().AllowAnyMethod());
 });
@@ -70,16 +86,25 @@ if (!skipSeeding)
 }
 
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<FleetManagement.Middlewares.SecurityHeadersMiddleware>();
 
-app.UseCors("LocalDev");
-
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsProduction())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Enforce HSTS and HTTPS in production.
+    app.UseHsts();
+    app.UseHttpsRedirection();
+    app.UseCors("Production");
 }
-
-app.UseHttpsRedirection();
+else
+{
+    // Enable local development CORS and developer tools when not in production.
+    app.UseCors("LocalDev");
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+}
 app.MapControllers();
 app.Run();
 

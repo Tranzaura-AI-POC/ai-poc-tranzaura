@@ -17,7 +17,9 @@ import { ServiceCenter } from './models/service-center';
         <h1 class="title">Fleet Service Scheduler</h1>
         <p class="subtitle">Schedule and manage maintenance appointments for your fleet — fast and simple.</p>
       </div>
-      <div class="hero-illustration" aria-hidden="true"></div>
+      <div class="hero-illustration" aria-hidden="true">
+        <img src="assets/Tranzaura_Logo_Menu.svg" alt="Tranzaura" class="hero-logo" />
+      </div>
     </div>
 
     <section class="container card" aria-labelledby="schedule-heading">
