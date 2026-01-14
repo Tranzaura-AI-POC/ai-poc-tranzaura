@@ -21,9 +21,28 @@ if (!string.IsNullOrEmpty(keyVaultUri))
 // Use configured FleetDatabase connection string or environment variable.
 // If none provided, fall back to the SQL Server specified by the team for user storage.
 var connectionString = builder.Configuration.GetConnectionString("FleetDatabase")
-                       ?? Environment.GetEnvironmentVariable("FLEET_CONNECTION_STRING")
-                      ?? "Server=localhost\\MSSQLSERVER01;Database=FleetDb;Trusted_Connection=True;TrustServerCertificate=True;";
-builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlServer(connectionString));
+                       ?? Environment.GetEnvironmentVariable("FLEET_CONNECTION_STRING");
+
+// If running in CI (GitHub Actions) or a SQLite-style connection string is provided,
+// prefer SQLite to avoid requiring a SQL Server instance on the runner.
+var isCi = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+if (!string.IsNullOrEmpty(connectionString) && (connectionString.Contains("Data Source=") || connectionString.Contains("Filename=") || connectionString.Contains(".db")))
+{
+    builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlite(connectionString));
+}
+else if (isCi)
+{
+    // Use a file-backed SQLite DB in CI so migrations and seeding succeed.
+    var ciSqlite = "Data Source=fleet_ci.db";
+    builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlite(ciSqlite));
+}
+else
+{
+    // Default to SQL Server when not in CI and no explicit connection was provided.
+    var defaultSql = "Server=localhost\\MSSQLSERVER01;Database=FleetDb;Trusted_Connection=True;TrustServerCertificate=True;";
+    var finalConn = connectionString ?? defaultSql;
+    builder.Services.AddDbContext<FleetDbContext>(options => options.UseSqlServer(finalConn));
+}
 
 // DI for repositories
 builder.Services.AddScoped<IFleetRepository, FleetRepository>();
