@@ -38,6 +38,22 @@ jobs:
         run: |
           npm run build --if-present
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run backend (API)
+        run: |
+          cd backend
+          dotnet restore
+          dotnet build -c Release
+          ASPNETCORE_URLS="http://127.0.0.1:5000" dotnet run --no-build &
+
+      - name: Wait for backend
+        run: |
+          npx wait-on http://127.0.0.1:5000
+
       - name: Serve frontend and wait
         working-directory: frontend
         run: |
