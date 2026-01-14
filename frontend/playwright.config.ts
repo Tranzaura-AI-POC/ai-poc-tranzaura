@@ -15,7 +15,7 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
   },
   webServer: {
-    command: 'npx http-server ./dist -p 4200 --silent',
+    command: 'npx serve ./dist -l 4200 -s',
     port: 4200,
     reuseExistingServer: Boolean(process.env.CI),
   },

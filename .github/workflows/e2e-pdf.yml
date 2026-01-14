@@ -41,7 +41,7 @@ jobs:
       - name: Serve frontend and wait
         working-directory: frontend
         run: |
-          npx http-server ./dist -p 4200 --silent &
+          npx serve ./dist -l 4200 -s &
           npx wait-on http://127.0.0.1:4200
 
       - name: Run Playwright tests and generate HTML report
