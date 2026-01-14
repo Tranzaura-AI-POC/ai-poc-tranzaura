@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 
 const API_BASE = 'http://127.0.0.1:5000/api';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private tokenKey = 'fleet_token';
+  private authState$ = new BehaviorSubject<string | null>(this.getToken());
+  public readonly authState = this.authState$.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -15,6 +18,7 @@ export class AuthService {
       tap(res => {
         if (res && res.token) {
           localStorage.setItem(this.tokenKey, res.token);
+          this.authState$.next(res.token);
         }
       })
     );
@@ -26,6 +30,7 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem(this.tokenKey);
+    this.authState$.next(null);
   }
 
   getToken(): string | null {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService, ToastMessage } from './toast.service';
 
@@ -17,7 +17,9 @@ import { ToastService, ToastMessage } from './toast.service';
 })
 export class ToastComponent {
   msgs: ToastMessage[] = [];
-  constructor(private svc: ToastService) {
+  private svc = inject(ToastService);
+
+  constructor() {
     this.svc.messages.subscribe(m => this.msgs = m);
   }
 

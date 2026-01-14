@@ -1,0 +1,46 @@
+name: Playwright E2E + PDF
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e_pdf:
+    name: Run Playwright E2E and publish PDF
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (frontend)
+        working-directory: frontend
+        run: |
+          npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: |
+          npx playwright install --with-deps
+
+      - name: Run Playwright tests and generate HTML report
+        working-directory: frontend
+        run: |
+          npx playwright test --reporter=html
+
+      - name: Generate PDF from HTML report
+        working-directory: frontend
+        run: |
+          node ./scripts/generate-test-pdf.js
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results-pdf
+          path: frontend/Test Results/playwright-test-results.pdf

@@ -1,31 +1,36 @@
-import { Directive, TemplateRef, ViewContainerRef, inject, Input, DoCheck } from '@angular/core';
+import { Directive, TemplateRef, ViewContainerRef, inject, Input, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from './auth.service';
+import { Subscription } from 'rxjs';
 
 @Directive({
   selector: '[appIfAdmin]',
   standalone: true
 })
-export class AdminOnlyDirective implements DoCheck {
+export class AdminOnlyDirective implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private hasView = false;
+  private sub: Subscription | null = null;
 
   constructor(private tpl: TemplateRef<any>, private vcr: ViewContainerRef) {}
 
-  // Angular will call this when the directive input is set. Use same name as selector.
+  // Accept an optional role name (not required). If not provided, default to 'admin'.
   @Input()
-  set appIfAdmin(condition: any) {
-    const isAdmin = this.auth.hasRole('admin');
-    if (isAdmin && !this.hasView) {
-      this.vcr.createEmbeddedView(this.tpl);
-      this.hasView = true;
-    } else if (!isAdmin && this.hasView) {
-      this.vcr.clear();
-      this.hasView = false;
-    }
+  appIfAdmin: string | undefined;
+
+  ngOnInit(): void {
+    // immediate check
+    this.updateView();
+    // subscribe to auth changes so view updates immediately
+    this.sub = this.auth.authState.subscribe(() => this.updateView());
   }
 
-  ngDoCheck() {
-    const isAdmin = this.auth.hasRole('admin');
+  ngOnDestroy(): void {
+    if (this.sub) this.sub.unsubscribe();
+  }
+
+  private updateView() {
+    const role = this.appIfAdmin || 'admin';
+    const isAdmin = this.auth.hasRole(role);
     if (isAdmin && !this.hasView) {
       this.vcr.createEmbeddedView(this.tpl);
       this.hasView = true;

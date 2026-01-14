@@ -38,6 +38,7 @@
     "test": "jest",
     "playwright:install": "npx playwright install --with-deps",
     "e2e": "npx playwright test",
+    "e2e:pdf": "npx playwright test --reporter=html && node ./scripts/generate-test-pdf.js",
     "e2e:ci": "npx playwright install --with-deps && npx playwright test --reporter=list",
     "e2e:serve": "npm run build && npx http-server ./dist/fleet-frontend -p 4200"
   }
