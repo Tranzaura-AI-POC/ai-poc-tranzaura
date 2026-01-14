@@ -14,6 +14,11 @@ export default defineConfig({
     actionTimeout: 10000,
     ignoreHTTPSErrors: true,
   },
+  webServer: {
+    command: 'npx http-server ./dist -p 4200 --silent',
+    port: 4200,
+    reuseExistingServer: !Boolean(process.env.CI),
+  },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
