@@ -22,7 +22,11 @@ jobs:
       - name: Install dependencies (frontend)
         working-directory: frontend
         run: |
-          npm ci
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Install Playwright browsers
         working-directory: frontend
