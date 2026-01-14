@@ -35,4 +35,33 @@ export class AuthService {
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
+
+  // Decode JWT payload (safe for non-sensitive client-side checks)
+  private parseJwt(token: string) {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const payload = parts[1];
+      const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decodeURIComponent(escape(decoded)));
+    } catch {
+      return null;
+    }
+  }
+
+  getUserRoles(): string[] {
+    const t = this.getToken();
+    if (!t) return [];
+    const payload = this.parseJwt(t);
+    if (!payload) return [];
+    // Common role claim names: 'role', 'roles', or 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+    const roleClaim = payload['roles'] || payload['role'] || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    if (!roleClaim) return [];
+    return Array.isArray(roleClaim) ? roleClaim : [String(roleClaim)];
+  }
+
+  hasRole(expected: string): boolean {
+    const roles = this.getUserRoles();
+    return roles.some(r => r.toLowerCase() === expected.toLowerCase());
+  }
 }

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ChangeDetectorRef } from '@angular/core';
 import { AuthService } from './auth.service';
 
 @Component({
@@ -21,7 +22,7 @@ import { AuthService } from './auth.service';
       <h2 class="auth-title" id="signin-heading">{{ isRegister ? 'Create an account' : 'Sign in to FleetHub' }}</h2>
       <p class="auth-sub">{{ isRegister ? 'Create a local account for development use.' : 'Enter your username and password to continue.' }}</p>
 
-      <form [formGroup]="form" (ngSubmit)="isRegister ? submitRegister() : submit()" class="auth-form" aria-labelledby="signin-heading">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" aria-labelledby="signin-heading">
         <label class="input-label" for="username">Username</label>
         <input id="username" class="auth-input" formControlName="username" placeholder="you@example.com" autocomplete="username" required aria-required="true" />
 
@@ -52,11 +53,19 @@ import { AuthService } from './auth.service';
         </div>
 
         <div class="auth-actions">
-          <button type="submit" class="btn-primary" [disabled]="form.invalid">{{ isRegister ? 'Create account' : 'Sign in' }}</button>
+          <button type="submit" class="btn-primary" (click)="onSubmit()">{{ isRegister ? 'Create account' : 'Sign in' }}</button>
         </div>
       </form>
 
-      <p *ngIf="error" class="auth-error" role="alert">{{ error }}</p>
+      <div *ngIf="error" class="auth-alert" role="alert" aria-live="assertive" (mouseenter)="pauseErrorTimer()" (mouseleave)="resumeErrorTimer()">
+        <div class="auth-alert-inner">
+          <div class="auth-alert-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.001 7h2v6h-2V7zm0 8h2v2h-2v-2z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zM4 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8-8-3.582-8-8z" fill="currentColor"/></svg>
+          </div>
+          <div class="auth-alert-message">{{ error }}</div>
+          <button class="auth-alert-close" (click)="clearError()" aria-label="Dismiss message">×</button>
+        </div>
+      </div>
       <p class="auth-note">For local dev the seeded admin: <strong>admin</strong> / <strong>Password123!</strong></p>
 
       <p class="auth-note">
@@ -73,7 +82,7 @@ export class SigninComponent {
   form: FormGroup | any;
   error: string | null = null;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {}
+  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.form = this.fb.group({ username: ['', [Validators.required]], password: ['', [Validators.required, Validators.minLength(8)]], confirmPassword: [''] }, { validators: this.passwordsMatch.bind(this) });
@@ -92,21 +101,87 @@ export class SigninComponent {
     const v = this.form.value as any;
     this.auth.login(v.username, v.password).subscribe({
       next: () => this.router.navigate(['/']),
-      error: () => this.error = 'Login failed'
+      error: (err: any) => {
+        // Friendly messages for common statuses
+        if (err && err.status === 401) {
+          this.showError('Incorrect username or password.');
+          return;
+        }
+        const msg = err?.error?.message || err?.error || err?.message || 'Invalid username or password';
+        this.showError(msg);
+      }
     });
   }
 
   submitRegister() {
     this.error = null;
     const v = this.form.value as any;
-    if (this.form.invalid) { this.error = 'Please fix validation errors'; return; }
+    if (this.form.invalid) { this.showError('Please fix validation errors'); return; }
     this.auth.register(v.username, v.password).subscribe({
       next: () => {
         // auto-login after successful registration
-        this.auth.login(v.username, v.password).subscribe({ next: () => this.router.navigate(['/']), error: () => this.error = 'Registration succeeded but login failed' });
+        this.auth.login(v.username, v.password).subscribe({ next: () => this.router.navigate(['/']), error: (err:any) => this.showError(err?.error || 'Registration succeeded but login failed') });
       },
-      error: () => this.error = 'Registration failed'
+      error: (err: any) => this.showError(err?.error || 'Registration failed')
     });
+  }
+
+  onSubmit() {
+    // ensure controls are marked touched so validators run
+    try { this.form.markAllAsTouched(); } catch {}
+    if (this.form.invalid) {
+      // provide helpful validation messages
+      const usernameCtrl = this.form.get('username');
+      const passwordCtrl = this.form.get('password');
+      if (usernameCtrl?.invalid) { this.showError('Please enter your username.'); return; }
+      if (passwordCtrl?.invalid) {
+        if (passwordCtrl?.errors?.minlength) this.showError('Password must be at least 8 characters.');
+        else this.showError('Please enter your password.');
+        return;
+      }
+    }
+    if (this.isRegister) {
+      this.submitRegister();
+    } else {
+      this.submit();
+    }
+  }
+
+  showError(message: string) {
+    this.error = message;
+    // auto-dismiss after 12s unless user hovers; support pause/resume
+    this.clearErrorTimer();
+    this._errorTimer = window.setTimeout(() => {
+      if (this.error === message) this.clearError();
+    }, 12000);
+    // ensure UI updates immediately
+    try { this.cdr.detectChanges(); } catch {}
+  }
+
+  clearError() { this.error = null; }
+
+  // ensure view updates when clearing
+  clearErrorImmediate() { this.error = null; try { this.cdr.detectChanges(); } catch {} }
+
+  private _errorTimer: number | null = null;
+
+  clearErrorTimer() {
+    if (this._errorTimer) {
+      try { clearTimeout(this._errorTimer as any); } catch {}
+      this._errorTimer = null;
+    }
+  }
+
+  pauseErrorTimer() {
+    // stop auto-dismiss while hovered
+    this.clearErrorTimer();
+  }
+
+  resumeErrorTimer() {
+    // resume with a short timeout so it doesn't linger forever
+    if (this.error && !this._errorTimer) {
+      this._errorTimer = setTimeout(() => this.clearError(), 6000) as unknown as number;
+    }
   }
 
   passwordsMatch(g: FormGroup) {
