@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Azure.Identity;
 using System;
+using System.IO;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -85,6 +89,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         }
     });
 builder.Services.AddAuthorization();
+// Persist DataProtection keys to disk (configurable path)
+var dpPath = builder.Configuration["DataProtectionPath"] ?? Environment.GetEnvironmentVariable("DATA_PROTECTION_PATH");
+if (string.IsNullOrEmpty(dpPath))
+{
+    dpPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FleetManagement", "DataProtection-Keys");
+}
+Directory.CreateDirectory(dpPath);
+builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dpPath)).SetApplicationName("FleetManagement");
+
+// Optional rate limiter registration (enabled via RATE_LIMIT_ENABLED=true)
+var _rateLimitEnabledEnv = builder.Configuration["RateLimitEnabled"] ?? Environment.GetEnvironmentVariable("RATE_LIMIT_ENABLED");
+var _rateLimitEnabled = !string.IsNullOrEmpty(_rateLimitEnabledEnv) && bool.TryParse(_rateLimitEnabledEnv, out var _rlOn) && _rlOn;
+if (_rateLimitEnabled)
+{
+    builder.Services.AddRateLimiter(options =>
+    {
+        options.AddPolicy("global", context => RateLimitPartition.GetFixedWindowLimiter("global", _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 100,
+            Window = TimeSpan.FromMinutes(1),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0
+        }));
+    });
+}
 // Enable CORS for local frontend (http://127.0.0.1:4200)
 // CORS: provide a strict production-origin policy via FRONTEND_ORIGIN env var or configuration.
 builder.Services.AddCors(options =>
@@ -95,12 +124,17 @@ builder.Services.AddCors(options =>
     {
         if (!string.IsNullOrEmpty(prodOrigin))
         {
-            policy.WithOrigins(prodOrigin).AllowAnyHeader().AllowAnyMethod();
+            // Restrict allowed methods in production and allow any headers from the trusted origin
+            policy.WithOrigins(prodOrigin)
+                  .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                  .AllowAnyHeader();
         }
         else
         {
             // If no production origin configured, avoid open CORS in non-dev environments.
-            policy.WithOrigins("http://127.0.0.1:4200", "http://localhost:4200").AllowAnyHeader().AllowAnyMethod();
+            policy.WithOrigins("http://127.0.0.1:4200", "http://localhost:4200")
+                  .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                  .AllowAnyHeader();
         }
     });
 
@@ -111,21 +145,24 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Ensure the database schema is created/migrated and seed data is applied.
-// We run migrations/EnsureCreated and seed data so the SQL DB contains the
-// necessary tables (including `Users`). This will apply to the configured
-// SQL Server (development or production) — adjust if you want different
-// behaviour per environment.
-using (var scope = app.Services.CreateScope())
+// Only perform automatic migrations/seeding in development or CI. Avoid
+// applying schema changes automatically in production unless explicitly
+// enabled via APPLY_MIGRATIONS=true.
+var applyMigrations = Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "true";
+if (app.Environment.IsDevelopment() || isCi || applyMigrations)
 {
-    var services = scope.ServiceProvider;
-    try
+    using (var scope = app.Services.CreateScope())
     {
-        SeedData.Initialize(services);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred seeding the DB.");
+        var services = scope.ServiceProvider;
+        try
+        {
+            SeedData.Initialize(services);
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred seeding the DB.");
+        }
     }
 }
 
@@ -155,9 +192,15 @@ else
         app.UseSwaggerUI();
     }
 }
-app.MapControllers();
+// Apply optional rate limiting before authentication and controllers
+if (_rateLimitEnabled)
+{
+    app.UseRateLimiter();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapControllers();
 app.Run();
 
 
