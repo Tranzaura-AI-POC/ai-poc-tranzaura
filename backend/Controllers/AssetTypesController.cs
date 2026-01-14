@@ -1,11 +1,13 @@
 using FleetManagement.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 
 namespace FleetManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     public class AssetTypesController : ControllerBase
     {
         private readonly IFleetRepository _repo;

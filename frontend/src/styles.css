@@ -173,6 +173,24 @@ html, body {
 .auth-error{ color:#9b1c1c; background:rgba(155,28,28,0.05); padding:8px 10px; border-radius:8px; font-weight:600 }
 .auth-note{ color:var(--text-muted); font-size:12px; margin-top:8px }
 
+/* Modern auth alert */
+.auth-alert{ max-width:420px; margin:12px auto; }
+.auth-alert-inner{ display:flex; align-items:center; gap:12px; background: linear-gradient(180deg, #fff, #fbfbfc); border-radius:10px; padding:12px 14px; box-shadow: 0 8px 30px rgba(2,6,23,0.06); border:1px solid rgba(20,39,61,0.06); }
+.auth-alert{ transition: transform 160ms ease, opacity 160ms ease }
+.auth-alert-inner{ transform-origin: top center }
+.auth-alert-enter{ opacity:0; transform: translateY(-6px) scale(0.995) }
+.auth-alert-enter-active{ opacity:1; transform: translateY(0) scale(1) }
+.auth-alert-inner{ animation: authFadeIn 220ms ease both }
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: translateY(-6px) scale(.995) }
+  to { opacity: 1; transform: translateY(0) scale(1) }
+}
+.auth-alert-icon{ color:#d3544a; display:flex; align-items:center; justify-content:center }
+.auth-alert-message{ color:var(--text-dark); font-weight:600; font-size:14px; flex:1 }
+.auth-alert-close{ background:transparent; border:none; font-size:20px; line-height:1; color:var(--text-muted); cursor:pointer; padding:4px 6px; border-radius:6px }
+.auth-alert-close:hover{ background:rgba(20,39,61,0.04); color:var(--text-dark) }
+
 /* Sign-in panel that holds the FleetHub brand to match other pages */
 .signin-panel{
   max-width:420px;
@@ -187,8 +205,21 @@ html, body {
 .signin-panel .brand-link{ font-size:20px }
 
 /* Password field wrapper with inline toggle */
-.pw-field{ position:relative }
-.pw-toggle{ position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:6px; color:var(--text-muted) }
+.pw-field{ position:relative; width:100%; display:block }
+.auth-input{ padding:10px 12px; border-radius:8px; border:1px solid rgba(20,39,61,0.08); font-size:14px; width:100%; box-sizing:border-box }
+.pw-toggle{ position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; padding:6px; color:var(--text-muted); z-index:2 }
+.pw-field .auth-input{ padding-right:40px }
+
+/* Hide browser-native password reveal/clear icons to avoid duplicate toggles */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-button,
+input[type="password"]::-webkit-clear-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  pointer-events: none !important;
+}
 .pw-toggle:focus{ outline:none }
 
 .password-strength-meter{ margin-top:8px; display:flex; gap:10px; align-items:center }
@@ -204,6 +235,48 @@ html, body {
 .strength-bar{ height:8px; background:rgba(2,6,23,0.04); border-radius:6px; overflow:hidden }
 .strength-fill{ height:100%; width:0%; background:linear-gradient(90deg,#ff6c58,#39cefa); transition:width 220ms }
 .strength-text{ font-size:12px; color:var(--text-muted) }
+
+
+/* Docs page styling: match the app's card/typography for a cohesive look */
+.docs-page{
+  max-width:960px;
+  margin:28px auto;
+  background: var(--card);
+  border: 1px solid rgba(20,39,61,0.06);
+  box-shadow: 0 8px 30px rgba(2,6,23,0.06);
+  border-radius:12px;
+  padding:28px 32px;
+  color:var(--text-dark);
+}
+.docs-page h1{ margin:0 0 12px; font-size:26px; font-weight:700 }
+.docs-page p{ color:var(--text-muted); margin:0 0 12px; font-size:15px }
+.docs-page ol{ margin:12px 0 0 20px; color:var(--text-dark); }
+.docs-page li{ margin:10px 0; line-height:1.45; font-size:15px }
+.docs-page li strong{ color:var(--text-dark); font-weight:700 }
+.docs-page code{ background: rgba(2,6,23,0.04); padding:2px 6px; border-radius:6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace; font-size:0.95em; }
+.docs-page pre{ background: rgba(2,6,23,0.04); padding:12px; border-radius:8px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace }
+.docs-page .note{ margin-top:14px; color:var(--text-muted); font-size:13px }
+
+@media (max-width:700px){ .docs-page{ margin:16px; padding:18px } .docs-page h1{ font-size:20px } }
+
+/* Forbidden page card tweaks */
+.forbidden-page{ max-width:720px; margin:36px auto; padding:18px }
+.forbidden-card{ background:var(--card); border-radius:12px; padding:28px; box-shadow:0 10px 36px rgba(2,6,23,0.08); border:1px solid rgba(20,39,61,0.06); text-align:center }
+.forbidden-card h1{ margin:0 0 8px; font-size:22px }
+.forbidden-card .muted{ color:var(--muted); margin-bottom:12px }
+.forbidden-actions{ display:flex; gap:12px; justify-content:center; margin-top:14px }
+.btn{ padding:8px 14px; border-radius:8px; border:1px solid rgba(20,39,61,0.06); background:linear-gradient(180deg,#fff,#fbfbfc); cursor:pointer }
+.btn-secondary{ background:transparent; border:1px solid rgba(20,39,61,0.06) }
+
+/* Toast styles */
+.toast-wrap{ position:fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:10px; z-index:9999 }
+.toast{ min-width:220px; max-width:360px; padding:10px 12px; border-radius:10px; box-shadow:0 12px 36px rgba(2,6,23,0.18); display:flex; align-items:center; gap:10px; position:relative }
+.toast .toast-body{ flex:1; font-weight:600; color:var(--text-dark) }
+.toast.info{ background: linear-gradient(180deg,#fff,#fbfbfc); border:1px solid rgba(20,39,61,0.06) }
+.toast.success{ background: linear-gradient(180deg,#effaf0,#e7fff5); border:1px solid rgba(6,150,88,0.08); color:var(--success) }
+.toast.error{ background: linear-gradient(180deg,#fff6f6,#fff1f0); border:1px solid rgba(155,28,28,0.08); color:#9b1c1c }
+.toast-close{ position:absolute; right:8px; top:6px; border:none; background:transparent; font-size:16px; cursor:pointer; color:rgba(20,39,61,0.5) }
+
 
 
 

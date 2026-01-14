@@ -4,11 +4,13 @@ import { RouterModule, Router } from '@angular/router';
 import { HomepageComponent } from './homepage.component';
 import { AppointmentsComponent } from './appointments.component';
 import { AuthService } from './auth.service';
+import { ToastComponent } from './toast.component';
+import { AdminOnlyDirective } from './admin-only.directive';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterModule, HomepageComponent, AppointmentsComponent],
+  imports: [CommonModule, RouterModule, HomepageComponent, AppointmentsComponent, ToastComponent, AdminOnlyDirective],
   template: `
   <a class="skip-link" href="#main">Skip to content</a>
   <header *ngIf="auth.isAuthenticated()" class="site-header" role="banner">
@@ -19,7 +21,7 @@ import { AuthService } from './auth.service';
       <nav class="site-nav" role="navigation" aria-label="Main navigation">
         <a class="nav-link" routerLink="/">Home</a>
         <a class="nav-link" routerLink="/appointments">Appointments</a>
-        <a class="nav-link" href="#docs">Docs</a>
+        <a *appIfAdmin class="nav-link" routerLink="/docs">Docs</a>
         <a *ngIf="!auth.isAuthenticated()" class="nav-link" routerLink="/signin">Sign In</a>
         <a *ngIf="auth.isAuthenticated()" class="nav-link signout" (click)="signOut()">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" style="vertical-align:middle;margin-right:8px;filter:brightness(0) invert(1);">
@@ -30,10 +32,11 @@ import { AuthService } from './auth.service';
       </nav>
     </div>
   </header>
-
   <main id="main">
     <router-outlet></router-outlet>
   </main>
+
+  <app-toast></app-toast>
 
   <footer class="site-footer" role="contentinfo">
     <div class="site-footer-inner">
