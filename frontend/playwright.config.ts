@@ -15,9 +15,9 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
   },
   webServer: {
-    command: 'npx serve ./dist -l 4200 -s',
+    command: 'npx serve ./dist/fleet-frontend -l 4200 -s',
     port: 4200,
-    reuseExistingServer: Boolean(process.env.CI),
+    reuseExistingServer: true,
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
