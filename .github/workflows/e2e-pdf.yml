@@ -47,8 +47,9 @@ jobs:
         run: |
           cd backend
           dotnet restore
-          dotnet build -c Release
-          ASPNETCORE_URLS="http://127.0.0.1:5000" dotnet run --no-build &
+          dotnet publish -c Release -o out
+          echo "Starting backend (published) on http://127.0.0.1:5000"
+          nohup bash -c 'ASPNETCORE_URLS="http://127.0.0.1:5000" dotnet out/FleetManagement.dll' > backend.log 2>&1 &
 
       - name: Wait for backend
         run: |
