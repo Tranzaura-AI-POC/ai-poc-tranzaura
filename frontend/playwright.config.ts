@@ -17,7 +17,7 @@ export default defineConfig({
   webServer: {
     command: 'npx http-server ./dist -p 4200 --silent',
     port: 4200,
-    reuseExistingServer: !Boolean(process.env.CI),
+    reuseExistingServer: Boolean(process.env.CI),
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

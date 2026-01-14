@@ -1,0 +1,529 @@
+﻿2026-01-14T10:49:36.1482646Z ##[group]Run if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+2026-01-14T10:49:36.1483368Z [36;1mif [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then[0m
+2026-01-14T10:49:36.1483809Z [36;1m  npm ci[0m
+2026-01-14T10:49:36.1483995Z [36;1melse[0m
+2026-01-14T10:49:36.1484189Z [36;1m  npm install[0m
+2026-01-14T10:49:36.1484380Z [36;1mfi[0m
+2026-01-14T10:49:36.1523915Z shell: /usr/bin/bash -e {0}
+2026-01-14T10:49:36.1524184Z ##[endgroup]
+2026-01-14T10:49:59.5091162Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5092203Z npm warn EBADENGINE   package: '@angular-devkit/build-angular@21.0.5',
+2026-01-14T10:49:59.5092942Z npm warn EBADENGINE   required: {
+2026-01-14T10:49:59.5093604Z npm warn EBADENGINE     npm: '^6.11.0 || ^7.5.6 || >=8.0.0',
+2026-01-14T10:49:59.5094404Z npm warn EBADENGINE     node: '^20.19.0 || ^22.12.0 || >=24.0.0',
+2026-01-14T10:49:59.5095095Z npm warn EBADENGINE     yarn: '>= 1.13.0'
+2026-01-14T10:49:59.5095599Z npm warn EBADENGINE   },
+2026-01-14T10:49:59.5096332Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5096920Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5097390Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5098102Z npm warn EBADENGINE   package: '@angular/compiler-cli@21.0.8',
+2026-01-14T10:49:59.5099236Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+2026-01-14T10:49:59.5100138Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5100760Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5101276Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5101940Z npm warn EBADENGINE   package: '@angular/compiler@21.0.8',
+2026-01-14T10:49:59.5102798Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+2026-01-14T10:49:59.5103684Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5104259Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5104751Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5105433Z npm warn EBADENGINE   package: '@angular/animations@21.0.8',
+2026-01-14T10:49:59.5106295Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+2026-01-14T10:49:59.5107141Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5107508Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5107796Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5108189Z npm warn EBADENGINE   package: '@angular/core@21.0.8',
+2026-01-14T10:49:59.5108931Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+2026-01-14T10:49:59.5109802Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5110395Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5110849Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5111516Z npm warn EBADENGINE   package: '@angular/common@21.0.8',
+2026-01-14T10:49:59.5112353Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+2026-01-14T10:49:59.5113244Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5113826Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5114574Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5115205Z npm warn EBADENGINE   package: '@angular/cli@21.0.5',
+2026-01-14T10:49:59.5115793Z npm warn EBADENGINE   required: {
+2026-01-14T10:49:59.5116407Z npm warn EBADENGINE     npm: '^6.11.0 || ^7.5.6 || >=8.0.0',
+2026-01-14T10:49:59.5117162Z npm warn EBADENGINE     node: '^20.19.0 || ^22.12.0 || >=24.0.0',
+2026-01-14T10:49:59.5117795Z npm warn EBADENGINE     yarn: '>= 1.13.0'
+2026-01-14T10:49:59.5118263Z npm warn EBADENGINE   },
+2026-01-14T10:49:59.5119071Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5119658Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5120167Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5120812Z npm warn EBADENGINE   package: '@angular/forms@21.0.8',
+2026-01-14T10:49:59.5121638Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+2026-01-14T10:49:59.5122776Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5123312Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5123785Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5124525Z npm warn EBADENGINE   package: '@angular/platform-browser@21.0.8',
+2026-01-14T10:49:59.5125423Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+2026-01-14T10:49:59.5126291Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5126868Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5127319Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5128102Z npm warn EBADENGINE   package: '@angular/platform-browser-dynamic@21.0.8',
+2026-01-14T10:49:59.5129278Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+2026-01-14T10:49:59.5130071Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5130426Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5130795Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5131453Z npm warn EBADENGINE   package: '@angular/router@21.0.8',
+2026-01-14T10:49:59.5132066Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+2026-01-14T10:49:59.5132865Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5133384Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5133659Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5134084Z npm warn EBADENGINE   package: '@angular-devkit/architect@0.2100.5',
+2026-01-14T10:49:59.5134496Z npm warn EBADENGINE   required: {
+2026-01-14T10:49:59.5135099Z npm warn EBADENGINE     npm: '^6.11.0 || ^7.5.6 || >=8.0.0',
+2026-01-14T10:49:59.5135819Z npm warn EBADENGINE     node: '^20.19.0 || ^22.12.0 || >=24.0.0',
+2026-01-14T10:49:59.5136220Z npm warn EBADENGINE     yarn: '>= 1.13.0'
+2026-01-14T10:49:59.5136701Z npm warn EBADENGINE   },
+2026-01-14T10:49:59.5137277Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5137635Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5138097Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5138937Z npm warn EBADENGINE   package: '@angular-devkit/build-webpack@0.2100.5',
+2026-01-14T10:49:59.5139410Z npm warn EBADENGINE   required: {
+2026-01-14T10:49:59.5140040Z npm warn EBADENGINE     npm: '^6.11.0 || ^7.5.6 || >=8.0.0',
+2026-01-14T10:49:59.5140623Z npm warn EBADENGINE     node: '^20.19.0 || ^22.12.0 || >=24.0.0',
+2026-01-14T10:49:59.5141051Z npm warn EBADENGINE     yarn: '>= 1.13.0'
+2026-01-14T10:49:59.5141535Z npm warn EBADENGINE   },
+2026-01-14T10:49:59.5142117Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5142587Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5143096Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5143614Z npm warn EBADENGINE   package: '@angular-devkit/core@21.0.5',
+2026-01-14T10:49:59.5144122Z npm warn EBADENGINE   required: {
+2026-01-14T10:49:59.5144751Z npm warn EBADENGINE     npm: '^6.11.0 || ^7.5.6 || >=8.0.0',
+2026-01-14T10:49:59.5145325Z npm warn EBADENGINE     node: '^20.19.0 || ^22.12.0 || >=24.0.0',
+2026-01-14T10:49:59.5146098Z npm warn EBADENGINE     yarn: '>= 1.13.0'
+2026-01-14T10:49:59.5146569Z npm warn EBADENGINE   },
+2026-01-14T10:49:59.5147100Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5147687Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5148054Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5148687Z npm warn EBADENGINE   package: '@angular/build@21.0.5',
+2026-01-14T10:49:59.5149309Z npm warn EBADENGINE   required: {
+2026-01-14T10:49:59.5149750Z npm warn EBADENGINE     npm: '^6.11.0 || ^7.5.6 || >=8.0.0',
+2026-01-14T10:49:59.5150195Z npm warn EBADENGINE     node: '^20.19.0 || ^22.12.0 || >=24.0.0',
+2026-01-14T10:49:59.5150565Z npm warn EBADENGINE     yarn: '>= 1.13.0'
+2026-01-14T10:49:59.5150842Z npm warn EBADENGINE   },
+2026-01-14T10:49:59.5151204Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5151729Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5152010Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5152400Z npm warn EBADENGINE   package: '@ngtools/webpack@21.0.5',
+2026-01-14T10:49:59.5152758Z npm warn EBADENGINE   required: {
+2026-01-14T10:49:59.5153123Z npm warn EBADENGINE     npm: '^6.11.0 || ^7.5.6 || >=8.0.0',
+2026-01-14T10:49:59.5153557Z npm warn EBADENGINE     node: '^20.19.0 || ^22.12.0 || >=24.0.0',
+2026-01-14T10:49:59.5153931Z npm warn EBADENGINE     yarn: '>= 1.13.0'
+2026-01-14T10:49:59.5154203Z npm warn EBADENGINE   },
+2026-01-14T10:49:59.5154583Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5154925Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5155195Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5155531Z npm warn EBADENGINE   package: 'ora@9.0.0',
+2026-01-14T10:49:59.5155889Z npm warn EBADENGINE   required: { node: '>=20' },
+2026-01-14T10:49:59.5156320Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5156658Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5156924Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5157283Z npm warn EBADENGINE   package: 'piscina@5.1.3',
+2026-01-14T10:49:59.5157665Z npm warn EBADENGINE   required: { node: '>=20.x' },
+2026-01-14T10:49:59.5158094Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5158604Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5158912Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5159246Z npm warn EBADENGINE   package: 'vite@7.2.2',
+2026-01-14T10:49:59.5159663Z npm warn EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+2026-01-14T10:49:59.5160127Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5160466Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5160738Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5161077Z npm warn EBADENGINE   package: 'listr2@9.0.5',
+2026-01-14T10:49:59.5161459Z npm warn EBADENGINE   required: { node: '>=20.0.0' },
+2026-01-14T10:49:59.5161900Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5162241Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5162514Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5162889Z npm warn EBADENGINE   package: 'rolldown@1.0.0-beta.47',
+2026-01-14T10:49:59.5163343Z npm warn EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+2026-01-14T10:49:59.5163816Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5164146Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5164452Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5164799Z npm warn EBADENGINE   package: 'undici@7.16.0',
+2026-01-14T10:49:59.5165176Z npm warn EBADENGINE   required: { node: '>=20.18.1' },
+2026-01-14T10:49:59.5165615Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5165965Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5166242Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5166676Z npm warn EBADENGINE   package: '@angular-devkit/schematics@21.0.5',
+2026-01-14T10:49:59.5167200Z npm warn EBADENGINE   required: {
+2026-01-14T10:49:59.5167566Z npm warn EBADENGINE     npm: '^6.11.0 || ^7.5.6 || >=8.0.0',
+2026-01-14T10:49:59.5168010Z npm warn EBADENGINE     node: '^20.19.0 || ^22.12.0 || >=24.0.0',
+2026-01-14T10:49:59.5168381Z npm warn EBADENGINE     yarn: '>= 1.13.0'
+2026-01-14T10:49:59.5168906Z npm warn EBADENGINE   },
+2026-01-14T10:49:59.5169278Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5169621Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5169894Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5170341Z npm warn EBADENGINE   package: '@listr2/prompt-adapter-inquirer@3.0.5',
+2026-01-14T10:49:59.5170880Z npm warn EBADENGINE   required: { node: '>=20.0.0' },
+2026-01-14T10:49:59.5171659Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5172268Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5172803Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5173482Z npm warn EBADENGINE   package: '@schematics/angular@21.0.5',
+2026-01-14T10:49:59.5173866Z npm warn EBADENGINE   required: {
+2026-01-14T10:49:59.5174231Z npm warn EBADENGINE     npm: '^6.11.0 || ^7.5.6 || >=8.0.0',
+2026-01-14T10:49:59.5174977Z npm warn EBADENGINE     node: '^20.19.0 || ^22.12.0 || >=24.0.0',
+2026-01-14T10:49:59.5175608Z npm warn EBADENGINE     yarn: '>= 1.13.0'
+2026-01-14T10:49:59.5175974Z npm warn EBADENGINE   },
+2026-01-14T10:49:59.5176620Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5177113Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5177387Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5177767Z npm warn EBADENGINE   package: 'npm-package-arg@13.0.1',
+2026-01-14T10:49:59.5178329Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5179305Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5179684Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5180159Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5180766Z npm warn EBADENGINE   package: 'pacote@21.0.3',
+2026-01-14T10:49:59.5181410Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5182248Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5182686Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5183162Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5183703Z npm warn EBADENGINE   package: 'yargs@18.0.0',
+2026-01-14T10:49:59.5184440Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=23' },
+2026-01-14T10:49:59.5185134Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5185622Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5186080Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5186644Z npm warn EBADENGINE   package: 'cli-truncate@5.1.1',
+2026-01-14T10:49:59.5187325Z npm warn EBADENGINE   required: { node: '>=20' },
+2026-01-14T10:49:59.5188035Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5188799Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5189160Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5189786Z npm warn EBADENGINE   package: 'string-width@8.1.0',
+2026-01-14T10:49:59.5190419Z npm warn EBADENGINE   required: { node: '>=20' },
+2026-01-14T10:49:59.5190955Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5191548Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5191982Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5192657Z npm warn EBADENGINE   package: 'hosted-git-info@9.0.2',
+2026-01-14T10:49:59.5193429Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5194285Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5194782Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5195270Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5195813Z npm warn EBADENGINE   package: 'lru-cache@11.2.4',
+2026-01-14T10:49:59.5196760Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5197347Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5197957Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5198577Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5199270Z npm warn EBADENGINE   package: 'string-width@8.1.0',
+2026-01-14T10:49:59.5199871Z npm warn EBADENGINE   required: { node: '>=20' },
+2026-01-14T10:49:59.5200561Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5201134Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5201427Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5202068Z npm warn EBADENGINE   package: '@npmcli/git@7.0.1',
+2026-01-14T10:49:59.5202759Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5203788Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5204355Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5204805Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5205454Z npm warn EBADENGINE   package: '@npmcli/package-json@7.0.4',
+2026-01-14T10:49:59.5206253Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5206981Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5207539Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5207949Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5208783Z npm warn EBADENGINE   package: '@npmcli/run-script@10.0.3',
+2026-01-14T10:49:59.5209458Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5210274Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5210782Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5211239Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5211714Z npm warn EBADENGINE   package: 'cacache@20.0.3',
+2026-01-14T10:49:59.5212292Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5213107Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5213610Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5214066Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5214574Z npm warn EBADENGINE   package: 'npm-packlist@10.0.3',
+2026-01-14T10:49:59.5215208Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5215957Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5216482Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5216939Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5217555Z npm warn EBADENGINE   package: 'npm-pick-manifest@11.0.3',
+2026-01-14T10:49:59.5218331Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5219273Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5219759Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5220196Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5220880Z npm warn EBADENGINE   package: 'npm-registry-fetch@19.1.1',
+2026-01-14T10:49:59.5221602Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5222355Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5222948Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5223403Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5223814Z npm warn EBADENGINE   package: 'sigstore@4.1.0',
+2026-01-14T10:49:59.5224245Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5224905Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5225491Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5225834Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5226556Z npm warn EBADENGINE   package: '@npmcli/promise-spawn@9.0.1',
+2026-01-14T10:49:59.5227199Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5227960Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5228971Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5229534Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5229999Z npm warn EBADENGINE   package: 'ini@6.0.0',
+2026-01-14T10:49:59.5230715Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5231533Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5232127Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5232533Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5233108Z npm warn EBADENGINE   package: 'lru-cache@11.2.4',
+2026-01-14T10:49:59.5233744Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5234514Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5235108Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5235728Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5236094Z npm warn EBADENGINE   package: 'proc-log@6.1.0',
+2026-01-14T10:49:59.5236531Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5237163Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5237507Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5237773Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5238117Z npm warn EBADENGINE   package: 'which@6.0.0',
+2026-01-14T10:49:59.5238817Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5239669Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5240257Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5240708Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5241280Z npm warn EBADENGINE   package: 'glob@13.0.0',
+2026-01-14T10:49:59.5241947Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5242434Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5242784Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5243053Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5243494Z npm warn EBADENGINE   package: 'json-parse-even-better-errors@5.0.0',
+2026-01-14T10:49:59.5244019Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5244871Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5245444Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5245897Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5246490Z npm warn EBADENGINE   package: 'proc-log@6.1.0',
+2026-01-14T10:49:59.5247225Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5248040Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5248773Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5249231Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5249890Z npm warn EBADENGINE   package: '@npmcli/node-gyp@5.0.0',
+2026-01-14T10:49:59.5250677Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5251488Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5252071Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5252524Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5253218Z npm warn EBADENGINE   package: '@npmcli/promise-spawn@9.0.1',
+2026-01-14T10:49:59.5254014Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5254821Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5255403Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5255744Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5256095Z npm warn EBADENGINE   package: 'node-gyp@12.1.0',
+2026-01-14T10:49:59.5256515Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5256978Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5257490Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5257943Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5258584Z npm warn EBADENGINE   package: 'proc-log@6.1.0',
+2026-01-14T10:49:59.5259300Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5260152Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5260588Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5261011Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5261600Z npm warn EBADENGINE   package: 'which@6.0.0',
+2026-01-14T10:49:59.5262118Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5262586Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5262924Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5263197Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5263545Z npm warn EBADENGINE   package: '@npmcli/fs@5.0.0',
+2026-01-14T10:49:59.5263969Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5264675Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5265016Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5265286Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5265619Z npm warn EBADENGINE   package: 'glob@13.0.0',
+2026-01-14T10:49:59.5265998Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5266758Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5267300Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5267572Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5268095Z npm warn EBADENGINE   package: 'lru-cache@11.2.4',
+2026-01-14T10:49:59.5268931Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5269405Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5269744Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5270018Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5270368Z npm warn EBADENGINE   package: 'ssri@13.0.0',
+2026-01-14T10:49:59.5270905Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5271730Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5272242Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5272704Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5273250Z npm warn EBADENGINE   package: 'unique-filename@5.0.0',
+2026-01-14T10:49:59.5274023Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5274708Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5275296Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5275674Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5276258Z npm warn EBADENGINE   package: 'make-fetch-happen@15.0.3',
+2026-01-14T10:49:59.5276997Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5277597Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5278195Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5278831Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5279448Z npm warn EBADENGINE   package: 'nopt@9.0.0',
+2026-01-14T10:49:59.5280013Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5280478Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5280813Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5281073Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5281428Z npm warn EBADENGINE   package: 'proc-log@6.1.0',
+2026-01-14T10:49:59.5281854Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5282310Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5282644Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5282911Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5283242Z npm warn EBADENGINE   package: 'which@6.0.0',
+2026-01-14T10:49:59.5283655Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5284110Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5284606Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5284881Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5285235Z npm warn EBADENGINE   package: '@npmcli/agent@4.0.0',
+2026-01-14T10:49:59.5285666Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5286131Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5286458Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5286726Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5287092Z npm warn EBADENGINE   package: 'minipass-fetch@5.0.0',
+2026-01-14T10:49:59.5287530Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5287994Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5288325Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5288895Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5289255Z npm warn EBADENGINE   package: 'proc-log@6.1.0',
+2026-01-14T10:49:59.5289687Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5290159Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5290498Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5290768Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5291114Z npm warn EBADENGINE   package: 'ssri@13.0.0',
+2026-01-14T10:49:59.5291524Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5292002Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5292339Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5292606Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5292963Z npm warn EBADENGINE   package: 'lru-cache@11.2.4',
+2026-01-14T10:49:59.5293354Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5293817Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5294161Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5294433Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5294789Z npm warn EBADENGINE   package: 'abbrev@4.0.0',
+2026-01-14T10:49:59.5295214Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5295686Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5296030Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5296298Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5296660Z npm warn EBADENGINE   package: 'ignore-walk@8.0.0',
+2026-01-14T10:49:59.5297099Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5297566Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5297909Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5298229Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5298697Z npm warn EBADENGINE   package: 'proc-log@6.1.0',
+2026-01-14T10:49:59.5299121Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5299597Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5299930Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5300199Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5300552Z npm warn EBADENGINE   package: 'minimatch@10.1.1',
+2026-01-14T10:49:59.5300944Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5301389Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5301723Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5301985Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5302376Z npm warn EBADENGINE   package: 'npm-install-checks@8.0.0',
+2026-01-14T10:49:59.5302825Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5303289Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5303629Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5303889Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5304312Z npm warn EBADENGINE   package: 'npm-normalize-package-bin@5.0.0',
+2026-01-14T10:49:59.5304982Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5305439Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5305772Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5306033Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5306401Z npm warn EBADENGINE   package: '@npmcli/redact@4.0.0',
+2026-01-14T10:49:59.5306837Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5307291Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5307625Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5307890Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5308236Z npm warn EBADENGINE   package: 'proc-log@6.1.0',
+2026-01-14T10:49:59.5308923Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5309388Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5309741Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5310011Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5310389Z npm warn EBADENGINE   package: '@sigstore/bundle@4.0.0',
+2026-01-14T10:49:59.5310833Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5311298Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5311627Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5311895Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5312255Z npm warn EBADENGINE   package: '@sigstore/core@3.1.0',
+2026-01-14T10:49:59.5312685Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5313150Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5313480Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5313754Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5314125Z npm warn EBADENGINE   package: '@sigstore/sign@4.1.0',
+2026-01-14T10:49:59.5314554Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5315027Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5315360Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5315630Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5315992Z npm warn EBADENGINE   package: '@sigstore/tuf@4.0.1',
+2026-01-14T10:49:59.5316424Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5316892Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5317226Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5317490Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5317864Z npm warn EBADENGINE   package: '@sigstore/verify@3.1.0',
+2026-01-14T10:49:59.5318305Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5318882Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5319219Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5319489Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5319837Z npm warn EBADENGINE   package: 'proc-log@6.1.0',
+2026-01-14T10:49:59.5320258Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5320715Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5321047Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5321306Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5321647Z npm warn EBADENGINE   package: 'tuf-js@4.1.0',
+2026-01-14T10:49:59.5322066Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5322553Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5322890Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5323157Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5323519Z npm warn EBADENGINE   package: '@tufjs/models@4.1.0',
+2026-01-14T10:49:59.5323952Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5324546Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5324876Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5325143Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5325489Z npm warn EBADENGINE   package: 'minimatch@10.1.1',
+2026-01-14T10:49:59.5325886Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5326327Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5326657Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5326923Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5327275Z npm warn EBADENGINE   package: 'unique-slug@6.0.0',
+2026-01-14T10:49:59.5327706Z npm warn EBADENGINE   required: { node: '^20.17.0 || >=22.9.0' },
+2026-01-14T10:49:59.5328175Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5328763Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5329039Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5329377Z npm warn EBADENGINE   package: 'cliui@9.0.1',
+2026-01-14T10:49:59.5329744Z npm warn EBADENGINE   required: { node: '>=20' },
+2026-01-14T10:49:59.5330177Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5330515Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5330776Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5331147Z npm warn EBADENGINE   package: 'yargs-parser@22.0.0',
+2026-01-14T10:49:59.5331600Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=23' },
+2026-01-14T10:49:59.5332098Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5332440Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5332709Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5333065Z npm warn EBADENGINE   package: 'minimatch@10.1.1',
+2026-01-14T10:49:59.5333460Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5333899Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5334233Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5334501Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5334861Z npm warn EBADENGINE   package: 'path-scurry@2.0.1',
+2026-01-14T10:49:59.5335260Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5335699Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5336036Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5336297Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5336703Z npm warn EBADENGINE   package: '@isaacs/brace-expansion@5.0.0',
+2026-01-14T10:49:59.5337131Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5337562Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5337895Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5338160Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5338672Z npm warn EBADENGINE   package: '@isaacs/balanced-match@4.0.1',
+2026-01-14T10:49:59.5339100Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5339542Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5339872Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5340140Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5340486Z npm warn EBADENGINE   package: 'lru-cache@11.2.4',
+2026-01-14T10:49:59.5340876Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5341315Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5341641Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5341908Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5342268Z npm warn EBADENGINE   package: 'minimatch@10.1.1',
+2026-01-14T10:49:59.5342665Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5343108Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5343451Z npm warn EBADENGINE }
+2026-01-14T10:49:59.5343726Z npm warn EBADENGINE Unsupported engine {
+2026-01-14T10:49:59.5344087Z npm warn EBADENGINE   package: 'path-scurry@2.0.1',
+2026-01-14T10:49:59.5344610Z npm warn EBADENGINE   required: { node: '20 || >=22' },
+2026-01-14T10:49:59.5345050Z npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+2026-01-14T10:49:59.5345385Z npm warn EBADENGINE }
+2026-01-14T10:50:01.6880873Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2026-01-14T10:50:03.8565327Z npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+2026-01-14T10:50:06.1485368Z npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+2026-01-14T10:50:11.4018232Z 
+2026-01-14T10:50:11.4019886Z added 1188 packages, and audited 1189 packages in 35s
+2026-01-14T10:50:11.4020364Z 
+2026-01-14T10:50:11.4020651Z 189 packages are looking for funding
+2026-01-14T10:50:11.4021169Z   run `npm fund` for details
+2026-01-14T10:50:11.4033912Z 
+2026-01-14T10:50:11.4034342Z found 0 vulnerabilities
