@@ -14,6 +14,7 @@ namespace FleetManagement.Controllers
         public ServiceCentersController(IFleetRepository repo) => _repo = repo;
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get()
         {
             var items = await _repo.GetServiceCentersAsync();
