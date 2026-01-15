@@ -3,36 +3,36 @@ import { test, expect } from '@playwright/test';
 // Reuse API login to set localStorage token
 async function login(page) {
   await page.goto('/');
-  const token = await page.evaluate(async () => {
-    async function doLogin() {
+  // create a unique username per test run to avoid conflicts and ensure role assignment
+  const unique = `e2e_admin_${Date.now()}`;
+  const password = 'Password123!';
+
+  const token = await page.evaluate(async (u, p) => {
+    async function doLogin(username) {
       const res = await fetch('/api/Auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'admin', password: 'Password123!' })
+        body: JSON.stringify({ username, password: p })
       });
       if (!res.ok) return null;
       const json = await res.json();
       return json.token;
     }
 
-    // Try login; if user doesn't exist, register then login
-    let t = await doLogin();
-    if (!t) {
-      try {
-        await fetch('/api/Auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: 'admin', password: 'Password123!', role: 'Admin' })
-        });
-        t = await doLogin();
-      } catch (e) {
-        // ignore and return null
-      }
-    }
+    // Always attempt to register first (use unique username)
+    try {
+      await fetch('/api/Auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p, role: 'Admin' })
+      });
+    } catch { /* ignore */ }
 
+    const t = await doLogin(u);
     if (t) localStorage.setItem('fleet_token', t);
     return t;
-  });
+  }, unique, password);
+
   if (!token) throw new Error('Login failed: could not obtain token (register or login)');
 }
 
