@@ -14,11 +14,11 @@ export default defineConfig({
     actionTimeout: 10000,
     ignoreHTTPSErrors: true,
   },
-  webServer: {
-    command: 'npx serve ./dist/fleet-frontend -l 4200 -s',
-    port: 4200,
-    reuseExistingServer: true,
-  },
+  // Do not start a web server from Playwright to avoid interfering with an
+  // existing `ng serve` dev server. Tests will use the running server at
+  // `baseURL` (127.0.0.1:4200).
+  // If you need Playwright to start a server in CI, add a separate config
+  // or set `webServer` dynamically in CI scripts.
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],

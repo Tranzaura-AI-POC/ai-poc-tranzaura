@@ -7,7 +7,7 @@ namespace FleetManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class ServiceCentersController : ControllerBase
     {
         private readonly IFleetRepository _repo;

@@ -58,13 +58,17 @@ namespace FleetManagement.Controllers
         {
             // Use LocalJwt:Key (env LOCAL_JWT_KEY) for local development
             var key = _config["LocalJwt:Key"] ?? Environment.GetEnvironmentVariable("LOCAL_JWT_KEY");
-            if (string.IsNullOrEmpty(key)) key = "dev-local-key-change-me";
+            // Ensure a sufficiently large symmetric key for HMAC-SHA256 (>= 256 bits)
+            if (string.IsNullOrEmpty(key)) key = "dev-local-key-change-me-please-change-this-default-to-a-secure-value-01234567";
 
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim("roles", user.Role ?? "User")
+                // Include both the custom 'roles' claim and the standard ClaimTypes.Role
+                // to ensure Role-based checks work regardless of token-validation settings.
+                new Claim("roles", user.Role ?? "User"),
+                new Claim(ClaimTypes.Role, user.Role ?? "User")
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));

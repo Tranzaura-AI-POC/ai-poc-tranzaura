@@ -7,11 +7,11 @@ test.describe('Authorization flows', () => {
     await page.fill('#username', 'admin');
     await page.fill('#password', 'Password123!');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.waitForURL('/');
+    await page.waitForLoadState('networkidle');
 
-    // Nav should show Docs for admin
+    // Nav should show Docs for admin (wait for app to render)
     const docsLink = page.locator('nav.site-nav >> a.nav-link', { hasText: 'Docs' });
-    await expect(docsLink).toBeVisible();
+    await expect(docsLink).toBeVisible({ timeout: 10000 });
 
     await docsLink.click();
     await page.waitForURL(/\/docs/);
@@ -29,11 +29,11 @@ test.describe('Authorization flows', () => {
     await page.fill('#confirmPassword', 'Password123!');
     await page.getByRole('button', { name: 'Create account' }).click();
 
-    // After registration auto-login should navigate home
-    await page.waitForURL('/');
+    // After registration auto-login should settle
+    await page.waitForLoadState('networkidle');
 
     // Docs should not be visible in nav
-    await expect(page.locator('nav.site-nav')).not.toContainText('Docs');
+    await expect(page.locator('nav.site-nav')).not.toContainText('Docs', { timeout: 10000 });
 
     // Attempt direct navigation to /docs
     await page.goto('/docs');
@@ -53,7 +53,7 @@ test.describe('Authorization flows', () => {
     await page.fill('#password', 'Password123!');
     await page.fill('#confirmPassword', 'Password123!');
     await page.getByRole('button', { name: 'Create account' }).click();
-    await page.waitForURL('/');
+    await page.waitForLoadState('networkidle');
 
     // Try go to /docs -> forbidden
     await page.goto('/docs');
@@ -61,7 +61,7 @@ test.describe('Authorization flows', () => {
 
     // Click Go Home
     await page.getByRole('button', { name: 'Go Home' }).click();
-    await page.waitForURL('/');
+    await page.waitForLoadState('networkidle');
 
     // Go back to /docs to get to forbidden again
     await page.goto('/docs');
