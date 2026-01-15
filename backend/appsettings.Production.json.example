@@ -1,0 +1,22 @@
+{
+  "ConnectionStrings": {
+    "FleetDatabase": "Server=<your-sql-server>.database.windows.net;Database=FleetDb;User Id=<user>;Password=<password>;Trusted_Connection=False;Encrypt=True;"
+  },
+  "FrontendOrigin": "https://app.example.com",
+  "AzureAd": {
+    "TenantId": "<tenant-id>",
+    "ClientId": "<backend-client-id>",
+    "Audience": "api://<backend-client-id>",
+    "Authority": "https://login.microsoftonline.com/<tenant-id>"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning"
+    }
+  }
+  ,
+  "ApplicationInsights": {
+    "ConnectionString": "InstrumentationKey=<ikey>;IngestionEndpoint=https://<region>.monitoring.azure.com/;"
+  }
+}

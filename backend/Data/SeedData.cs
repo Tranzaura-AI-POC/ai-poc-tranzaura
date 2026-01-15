@@ -7,6 +7,14 @@ namespace FleetManagement.Data
     {
         public static void Initialize(IServiceProvider services)
         {
+            // Only perform seeding when explicitly enabled for Development or CI,
+            // or when the ENABLE_SEEDING environment variable is set to "true".
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+            var isCi = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+            var enableSeeding = env == "Development" || isCi || Environment.GetEnvironmentVariable("ENABLE_SEEDING") == "true";
+
+            // Migrations may still run depending on how Program.cs invokes Initialize.
+            // We will only perform data seeding (inserting rows) when enableSeeding is true.
             using var scope = services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<FleetDbContext>();
             try
@@ -63,51 +71,53 @@ END");
                 // ignore creation failures here; seeding will attempt and surface errors
             }
 
-            if (!context.AssetTypes.Any())
+            if (enableSeeding)
             {
-                context.AssetTypes.AddRange(new AssetType { Name = "Truck" },
-                                           new AssetType { Name = "Van" },
-                                           new AssetType { Name = "Sedan" },
-                                           new AssetType { Name = "SUV" },
-                                           new AssetType { Name = "Other" });
-            }
-
-            if (!context.ServiceCenters.Any())
-            {
-                context.ServiceCenters.AddRange(
-                    new ServiceCenter { Name = "Central Service", Address = "100 Main St", City = "Springfield", State = "CA", Zip = "90001" },
-                    new ServiceCenter { Name = "Northside Service", Address = "55 North Rd", City = "Shelbyville", State = "CA", Zip = "90002" },
-                    new ServiceCenter { Name = "Eastfield Garage", Address = "200 East Ave", City = "Ogden", State = "CA", Zip = "90003" }
-                );
-            }
-
-            // Seed a local admin user for development/testing if no users exist.
-            if (context.Users == null)
-            {
-                // If Users DbSet is not available for some reason, skip seeding users.
-            }
-            else
-            {
-                try
+                if (!context.AssetTypes.Any())
                 {
-                    if (!context.Users.Any())
-                    {
-                        // Default admin credentials: username 'admin', password 'Password123!'.
-                        // Change this in production and/or remove the seeded account.
-                        var pwHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
-                        context.Users.Add(new FleetManagement.Models.User { Username = "admin", PasswordHash = pwHash, Role = "Admin" });
-                    }
+                    context.AssetTypes.AddRange(new AssetType { Name = "Truck" },
+                                               new AssetType { Name = "Van" },
+                                               new AssetType { Name = "Sedan" },
+                                               new AssetType { Name = "SUV" },
+                                               new AssetType { Name = "Other" });
                 }
-                catch (Exception ex)
+
+                if (!context.ServiceCenters.Any())
                 {
-                    // If the Users table does not exist, create it directly and then seed.
-                    var msg = ex.Message ?? string.Empty;
-                    if (msg.Contains("Invalid object name 'Users'") || msg.Contains("doesn't exist") || msg.Contains("Invalid object name"))
+                    context.ServiceCenters.AddRange(
+                        new ServiceCenter { Name = "Central Service", Address = "100 Main St", City = "Springfield", State = "CA", Zip = "90001" },
+                        new ServiceCenter { Name = "Northside Service", Address = "55 North Rd", City = "Shelbyville", State = "CA", Zip = "90002" },
+                        new ServiceCenter { Name = "Eastfield Garage", Address = "200 East Ave", City = "Ogden", State = "CA", Zip = "90003" }
+                    );
+                }
+
+                // Seed a local admin user for development/testing if no users exist.
+                if (context.Users == null)
+                {
+                    // If Users DbSet is not available for some reason, skip seeding users.
+                }
+                else
+                {
+                    try
                     {
-                        try
+                        if (!context.Users.Any())
                         {
-                            // Create a minimal Users table compatible with the User model.
-                            context.Database.ExecuteSqlRaw(@"
+                            // Default admin credentials: username 'admin', password 'Password123!'.
+                            // Change this in production and/or remove the seeded account.
+                            var pwHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
+                            context.Users.Add(new FleetManagement.Models.User { Username = "admin", PasswordHash = pwHash, Role = "Admin" });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // If the Users table does not exist, create it directly and then seed.
+                        var msg = ex.Message ?? string.Empty;
+                        if (msg.Contains("Invalid object name 'Users'") || msg.Contains("doesn't exist") || msg.Contains("Invalid object name"))
+                        {
+                            try
+                            {
+                                // Create a minimal Users table compatible with the User model.
+                                context.Database.ExecuteSqlRaw(@"
 IF OBJECT_ID(N'dbo.Users', N'U') IS NULL
 BEGIN
     CREATE TABLE [dbo].[Users](
@@ -118,23 +128,24 @@ BEGIN
     );
 END");
 
-                            var pwHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
-                            context.Users.Add(new FleetManagement.Models.User { Username = "admin", PasswordHash = pwHash, Role = "Admin" });
+                                var pwHash = BCrypt.Net.BCrypt.HashPassword("Password123!");
+                                context.Users.Add(new FleetManagement.Models.User { Username = "admin", PasswordHash = pwHash, Role = "Admin" });
+                            }
+                            catch (Exception inner)
+                            {
+                                // If even creation fails, surface the original error.
+                                throw new Exception($"Failed to create Users table: {inner.Message}", inner);
+                            }
                         }
-                        catch (Exception inner)
+                        else
                         {
-                            // If even creation fails, surface the original error.
-                            throw new Exception($"Failed to create Users table: {inner.Message}", inner);
+                            throw;
                         }
-                    }
-                    else
-                    {
-                        throw;
                     }
                 }
-            }
 
-            context.SaveChanges();
+                context.SaveChanges();
+            }
         }
     }
 }

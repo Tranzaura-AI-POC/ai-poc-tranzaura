@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app/app.component';
 import { DocsComponent } from './app/docs.component';
 import { ForbiddenComponent } from './app/forbidden.component';
+import { TrainingComponent } from './app/training.component';
 import { provideRouter } from '@angular/router';
 import { HomepageComponent } from './app/homepage.component';
 import { AppointmentsComponent } from './app/appointments.component';
@@ -21,6 +22,7 @@ bootstrapApplication(AppComponent, {
       { path: '', component: HomepageComponent, canActivate: [authGuard] },
       { path: 'appointments', component: AppointmentsComponent, canActivate: [authGuard] },
       { path: 'docs', component: DocsComponent, canActivate: [authGuard], data: { roles: ['admin'] } },
+      { path: 'training', component: TrainingComponent },
       { path: 'forbidden', component: ForbiddenComponent },
       { path: 'signin', component: SigninComponent }
     ]),

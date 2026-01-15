@@ -9,6 +9,11 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.RateLimiting;
+using Azure.Storage.Blobs;
+using Azure.Core;
+using Azure;
+using Azure.Identity;
+using Azure.Extensions.AspNetCore.DataProtection.Blobs;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -90,14 +95,67 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         }
     });
 builder.Services.AddAuthorization();
-// Persist DataProtection keys to disk (configurable path)
-var dpPath = builder.Configuration["DataProtectionPath"] ?? Environment.GetEnvironmentVariable("DATA_PROTECTION_PATH");
-if (string.IsNullOrEmpty(dpPath))
+// DataProtection key storage: prefer Azure Blob Storage when configured, fall back to local filesystem.
+var dpBlobContainerUri = builder.Configuration["DataProtection:BlobContainerUri"];
+var dpBlobConn = builder.Configuration["DataProtection:BlobStorage:ConnectionString"];
+var dpBlobContainerName = builder.Configuration["DataProtection:BlobStorage:ContainerName"];
+
+if (!string.IsNullOrEmpty(dpBlobContainerUri))
 {
-    dpPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FleetManagement", "DataProtection-Keys");
+    try
+    {
+        var containerClient = new BlobContainerClient(new Uri(dpBlobContainerUri), new DefaultAzureCredential());
+        containerClient.CreateIfNotExists();
+        builder.Services.AddDataProtection()
+                .PersistKeysToAzureBlobStorage(containerClient, "dataprotection-keys.xml")
+                .SetApplicationName("FleetManagement");
+    }
+    catch (Exception ex)
+    {
+        // If Blob persistence fails (missing permissions, network), fallback to file system and log.
+        Console.WriteLine($"Warning: Failed to configure DataProtection Azure Blob persistence: {ex.Message}. Falling back to file system.");
+        var dpPath = builder.Configuration["DataProtectionPath"] ?? Environment.GetEnvironmentVariable("DATA_PROTECTION_PATH");
+        if (string.IsNullOrEmpty(dpPath))
+        {
+            dpPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FleetManagement", "DataProtection-Keys");
+        }
+        Directory.CreateDirectory(dpPath);
+        builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dpPath)).SetApplicationName("FleetManagement");
+    }
 }
-Directory.CreateDirectory(dpPath);
-builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dpPath)).SetApplicationName("FleetManagement");
+else if (!string.IsNullOrEmpty(dpBlobConn) && !string.IsNullOrEmpty(dpBlobContainerName))
+{
+    try
+    {
+        var containerClient = new BlobContainerClient(dpBlobConn, dpBlobContainerName);
+        containerClient.CreateIfNotExists();
+        builder.Services.AddDataProtection()
+                .PersistKeysToAzureBlobStorage(containerClient, "dataprotection-keys.xml")
+                .SetApplicationName("FleetManagement");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Warning: Failed to configure DataProtection Azure Blob persistence: {ex.Message}. Falling back to file system.");
+        var dpPath = builder.Configuration["DataProtectionPath"] ?? Environment.GetEnvironmentVariable("DATA_PROTECTION_PATH");
+        if (string.IsNullOrEmpty(dpPath))
+        {
+            dpPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FleetManagement", "DataProtection-Keys");
+        }
+        Directory.CreateDirectory(dpPath);
+        builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dpPath)).SetApplicationName("FleetManagement");
+    }
+}
+else
+{
+    // Persist DataProtection keys to disk (configurable path)
+    var dpPath = builder.Configuration["DataProtectionPath"] ?? Environment.GetEnvironmentVariable("DATA_PROTECTION_PATH");
+    if (string.IsNullOrEmpty(dpPath))
+    {
+        dpPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FleetManagement", "DataProtection-Keys");
+    }
+    Directory.CreateDirectory(dpPath);
+    builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dpPath)).SetApplicationName("FleetManagement");
+}
 
 // Optional rate limiter registration (enabled via RATE_LIMIT_ENABLED=true)
 var _rateLimitEnabledEnv = builder.Configuration["RateLimitEnabled"] ?? Environment.GetEnvironmentVariable("RATE_LIMIT_ENABLED");

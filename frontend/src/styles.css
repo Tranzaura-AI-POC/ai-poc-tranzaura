@@ -1,6 +1,7 @@
 
 :root{
   --bg: #f4f4f4;
+  --content-max-width: 1100px;
   --card: #ffffff;
   --text-dark: #14273d;
   --text-muted: #606060;
@@ -37,7 +38,7 @@ html, body {
 
 .app-root { display:block; }
 
-.homepage-root{ padding: 56px 24px; max-width:1100px; margin:0 auto; }
+.homepage-root{ padding: 56px 24px; max-width:var(--content-max-width); margin:0 auto; }
 
 .hero{ display:flex; gap:28px; align-items:center; margin-bottom:28px; }
 .hero-inner{ flex:1 }
@@ -62,7 +63,7 @@ html, body {
   display:block;
 }
 
-.container{ background: var(--card); border-radius:12px; padding:24px; box-shadow: 0 6px 20px rgba(2,6,23,0.06); }
+.container{ background: var(--card); border-radius:12px; padding:24px; box-shadow: 0 6px 20px rgba(2,6,23,0.06); max-width:var(--content-max-width); margin:0 auto; }
 .card{ border:1px solid rgba(15,23,42,0.06); }
 
 .form-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:16px; align-items:start }
@@ -239,7 +240,7 @@ input[type="password"]::-webkit-clear-button {
 
 /* Docs page styling: match the app's card/typography for a cohesive look */
 .docs-page{
-  max-width:960px;
+  max-width:var(--content-max-width);
   margin:28px auto;
   background: var(--card);
   border: 1px solid rgba(20,39,61,0.06);
@@ -248,6 +249,16 @@ input[type="password"]::-webkit-clear-button {
   padding:28px 32px;
   color:var(--text-dark);
 }
+/* Training page thumbnails and layout */
+.training-list{ padding:0; margin:0 }
+.training-item{ display:flex; gap:16px; align-items:flex-start; margin:12px 0; list-style:none; padding:12px; border-radius:10px; background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,250,0.95)); border:1px solid rgba(20,39,61,0.04); box-shadow: 0 6px 18px rgba(2,6,23,0.04) }
+.training-thumb{ width:160px; height:90px; display:flex; align-items:center; justify-content:center; border-radius:8px; flex-shrink:0 }
+.training-thumb svg{ width:100%; height:100%; border-radius:8px }
+.training-meta{ display:block; max-width:calc(var(--content-max-width) - 200px) }
+.training-meta a{ font-weight:700; color:var(--text-dark); text-decoration:none }
+.training-meta a:hover{ text-decoration:underline }
+.training-desc{ margin:8px 0 0; color:var(--text-muted); font-size:14px }
+.training-item:hover{ transform:translateY(-4px); box-shadow:0 12px 30px rgba(2,6,23,0.08) }
 .docs-page h1{ margin:0 0 12px; font-size:26px; font-weight:700 }
 .docs-page p{ color:var(--text-muted); margin:0 0 12px; font-size:15px }
 .docs-page ol{ margin:12px 0 0 20px; color:var(--text-dark); }

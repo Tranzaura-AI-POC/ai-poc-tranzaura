@@ -289,10 +289,42 @@ export class HomepageComponent implements OnInit {
     }
   }
 
-  toggleAssetTypeList(): void { this.showAssetTypeList = !this.showAssetTypeList; }
-  toggleCenterList(): void { this.showCenterList = !this.showCenterList; }
-  toggleMakeList(): void { this.showMakeList = !this.showMakeList; }
-  toggleYearList(): void { this.showYearList = !this.showYearList; }
+  toggleAssetTypeList(): void {
+    // close other lists when opening this one
+    if (!this.showAssetTypeList) {
+      this.showCenterList = false;
+      this.showMakeList = false;
+      this.showYearList = false;
+    }
+    this.showAssetTypeList = !this.showAssetTypeList;
+  }
+
+  toggleCenterList(): void {
+    if (!this.showCenterList) {
+      this.showAssetTypeList = false;
+      this.showMakeList = false;
+      this.showYearList = false;
+    }
+    this.showCenterList = !this.showCenterList;
+  }
+
+  toggleMakeList(): void {
+    if (!this.showMakeList) {
+      this.showAssetTypeList = false;
+      this.showCenterList = false;
+      this.showYearList = false;
+    }
+    this.showMakeList = !this.showMakeList;
+  }
+
+  toggleYearList(): void {
+    if (!this.showYearList) {
+      this.showAssetTypeList = false;
+      this.showCenterList = false;
+      this.showMakeList = false;
+    }
+    this.showYearList = !this.showYearList;
+  }
 
   selectAssetType(name: string): void {
     this.assetTypeInput = name;

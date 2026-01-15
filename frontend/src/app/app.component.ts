@@ -21,6 +21,7 @@ import { AdminOnlyDirective } from './admin-only.directive';
       <nav class="site-nav" role="navigation" aria-label="Main navigation">
         <a class="nav-link" routerLink="/">Home</a>
         <a class="nav-link" routerLink="/appointments">Appointments</a>
+        <a class="nav-link" routerLink="/training">Training</a>
         <a *appIfAdmin class="nav-link" routerLink="/docs">Docs</a>
         <a *ngIf="!auth.isAuthenticated()" class="nav-link" routerLink="/signin">Sign In</a>
         <a *ngIf="auth.isAuthenticated()" class="nav-link signout" (click)="signOut()">
@@ -40,7 +41,7 @@ import { AdminOnlyDirective } from './admin-only.directive';
 
   <footer class="site-footer" role="contentinfo">
     <div class="site-footer-inner">
-      <p>© {{ year }} FleetHub — Built with care.</p>
+      <p>© {{ year }} FleetHub — Built with care. <a class="nav-link" routerLink="/training">Training</a></p>
     </div>
   </footer>
   `

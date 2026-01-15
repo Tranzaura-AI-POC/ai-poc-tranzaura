@@ -132,3 +132,21 @@ License
 - **Recommendations (not yet automated)**: use Azure Key Vault + Managed Identity for secrets, persist DataProtection keys to blob/KeyVault for multi-instance scenarios, run `dotnet list package --vulnerable` and `npm audit`, and host the frontend behind a CDN or Azure Static Web Apps with a WAF in front of the API (Front Door/Application Gateway + WAF).
 
 # ai-poc-tranzaura
+
+## DataProtection keys (Azure Blob Storage)
+
+For multi-instance deployments you should persist ASP.NET Core DataProtection keys to a central store. This project supports persisting keys to Azure Blob Storage when configured; otherwise it falls back to a local filesystem path.
+
+Environment/configuration options (examples):
+
+- `DataProtection:BlobContainerUri` — full container URI (e.g. `https://<account>.blob.core.windows.net/<container>`). When present the app will use `DefaultAzureCredential` (Managed Identity) to access the container.
+- `DataProtection:BlobStorage:ConnectionString` and `DataProtection:BlobStorage:ContainerName` — alternative using a storage connection string.
+- `DataProtectionPath` — local filesystem fallback path for development.
+
+Example (App Service with managed identity):
+
+1. Create an Azure Storage container (e.g., `dataprotection`).
+2. Assign the App Service a system-assigned Managed Identity and grant it `Storage Blob Data Contributor` role scoped to the container.
+3. Set `DataProtection:BlobContainerUri` to the container URI in App Settings.
+
+Local development (no blob storage): set `ASPNETCORE_ENVIRONMENT=Development` or leave blob settings empty; keys will be stored on disk under the application data folder by default.

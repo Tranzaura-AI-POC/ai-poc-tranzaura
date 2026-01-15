@@ -1,0 +1,109 @@
+{\rtf1\ansi\deff0{\fonttbl{\f0 Calibri;}{\f1 Courier New;}}\fs22\par
+\b Azure Migration — Todo List\b0\par
+\par
+Last updated: 2026-01-15\par
+\par
+This document captures the prioritized steps to move `ai-poc-tranzaura` to your Azure organization. Treat each top-level checkbox as a milestone; expand items into sub-tasks as needed.\par
+\par
+- [ ] Prepare Azure account and access\par
+  - Create or confirm Resource Group and Subscription.\par
+  - Create a service principal with scoped rights (least privilege) for CI/CD.\par
+  - Create an Azure DevOps service connection or GitHub service principal.\par
+\par
+- [ ] Choose deployment targets\par
+  - Decide between App Service (PaaS) for .NET or container-based (Azure Container Apps / AKS).\par
+  - Document reasons: scaling, cost, operational overhead, and CI/CD implications.\par
+\par
+- [ ] Provision infrastructure (IaC)\par
+  - Author Bicep or Terraform templates to create: Resource Group, Azure SQL Server + Database (or Managed Instance), App Service / Container Apps / ACR, Key Vault, Storage Account (for DataProtection keys), Application Insights, and optional VNet/subnet.\par
+  - Keep all templates parameterized for `env` (staging/prod).\par
+\par
+- [ ] Secure secrets with Key Vault and Managed Identity\par
+  - Enable system-assigned Managed Identity on App Service / Container instance.\par
+  - Store DB connection string, `FRONTEND_ORIGIN`, `LocalJwt` key (dev-only), and any third-party secrets in Key Vault.\par
+  - Grant Key Vault access (Key Vault access policy or RBAC) to the Managed Identity.\par
+  - Enable Key Vault soft-delete and purge protection.\par
+\par
+- [ ] Authentication & Authorization setup\par
+  - Register backend and frontend apps in Azure AD (App registrations).\par
+  - Configure OAuth redirect URIs for the frontend, and expose API scopes for the backend.\par
+  - Replace dev `LocalJwt` fallback with Azure AD in production; update `Program.cs` to validate Azure AD JWTs (Authority/Audience).\par
+  - Plan user/role mapping (groups or roles claims) for `Authorize` attributes.\par
+\par
+- [ ] Update application to use Azure services\par
+  - Change configuration to read connection strings and secrets from environment variables and Key Vault.\par
+  - Configure DataProtection to persist keys to Azure Blob Storage or Key Vault.\par
+  - Use Managed Identity to access Key Vault (avoid embedding secrets).\par
+  - Ensure startup reads `FRONTEND_ORIGIN` from Key Vault/Config and does not enable broad CORS in production.\par
+\par
+- [ ] Database migration and seeding policy\par
+  - Decide EF Core migration strategy: run migrations as part of deployment (pipeline job) or via a separate admin job.\par
+  - Ensure seeding only runs in Development/CI and never creates test/registration users in production.\par
+  - Create a safe rollback plan for schema changes.\par
+\par
+- [ ] CORS, HTTPS, and security headers\par
+  - Set `FRONTEND_ORIGIN` to the production frontend URL only.\par
+  - Enforce HTTPS and HSTS in production.\par
+  - Tighten CORS to specific origins and methods; remove permissive dev fallbacks for production.\par
+  - Keep security headers middleware (`SecurityHeadersMiddleware`) enabled and reviewed.\par
+\par
+- [ ] CI/CD pipeline (Azure Pipelines or GitHub Actions)\par
+  - Pipeline should: build backend and frontend, run unit/tests, build Docker image (if using containers), push to ACR, deploy to App Service/Container Apps, run DB migrations, and run post-deploy smoke tests.\par
+  - Use a service principal with least privilege; store pipeline secrets in Key Vault or secure pipeline variable groups.\par
+  - Add required approvals for production and protect the `main` branch.\par
+\par
+- [ ] Monitoring, logging and alerts\par
+  - Enable Application Insights for backend and frontend.\par
+  - Configure alerts for failed deployments, high error rate, high CPU/RU, and DB issues.\par
+  - Centralize logs and enable diagnostic logging for Key Vault and other critical resources.\par
+\par
+- [ ] Network and data protection\par
+  - Consider Private Link or VNet integration for Azure SQL to prevent public exposure.\par
+  - Configure firewall rules for SQL and storage accounts.\par
+  - Ensure Transparent Data Encryption (TDE) and encryption at rest for all storage.\par
+\par
+- [ ] Access control and operational security\par
+  - Use Azure RBAC to limit human and service access to resources.\par
+  - Rotate service principal credentials and Key Vault secrets regularly.\par
+  - Enable activity logs and export them to a Log Analytics workspace.\par
+  - Create runbooks for common operational tasks and incident response.\par
+\par
+- [ ] Cost, sizing and testing\par
+  - Estimate costs and choose SKUs for App Service/VM/AKS, SQL, and other resources.\par
+  - Run performance and load tests in a staging environment.\par
+  - Validate autoscale settings and failover.\par
+\par
+- [ ] Documentation and runbook\par
+  - Document deployment steps, pipeline variables, required environment variables, secret names in Key Vault, and how to rotate credentials.\par
+  - Include development vs production config differences and local run steps.\par
+\par
+- [ ] Staging environment and final cutover\par
+  - Provision a staging environment mirroring production.\par
+  - Run full e2e tests and smoke tests (Playwright) in staging.\par
+  - Plan DNS cutover, certificate provisioning, and a maintenance window for production deployment.\par
+\par
+---\par
+\par
+## Security & Authentication Checklist (quick reference)\par
+\par
+- Use Key Vault and Managed Identity — no plaintext secrets in repos.\par
+- Register apps in Azure AD and use AAD tokens in production (no `LocalJwt` fallback in prod).\par
+- Persist DataProtection keys to Azure Blob Storage or Key Vault.\par
+- Tighten CORS and enforce HTTPS/HSTS in production.\par
+- Protect databases with Private Link or VNet and enable firewall rules.\par
+- Enable Key Vault soft-delete, logging, and rotation policies.\par
+\par
+---\par
+\par
+## Quick links & notes\par
+\par
+- App config/code locations to review before deployment:\par
+  - `backend/Program.cs` — CORS, auth & startup configuration\par
+  - `backend/Data/SeedData.cs` — seeding behavior (ensure gated)\par
+  - `frontend/proxy.conf.json` — dev proxy; not used in production\par
+  - `frontend/scripts/generate-test-pdf.js` — CI artifact generation (if needed)\par
+\par
+---\par
+\par
+If you want, I can now scaffold an Azure Pipelines YAML to build and deploy this app (staging and production), or draft GitHub Actions instead. Which CI system should I target?\par
+}

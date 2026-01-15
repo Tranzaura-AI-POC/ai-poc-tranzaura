@@ -1,0 +1,244 @@
+# Azure Pipelines CI/CD for ai-poc-tranzaura
+# Stages: Build -> Deploy-Dev -> Deploy-UAT -> Deploy-Prod
+# NOTE: Fill pipeline variables (service connection names, app names, storage account, resource group)
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+variables:
+  - name: azureSubscription        # Azure service connection name (set in pipeline or variable group)
+    value: ''
+  - name: resourceGroup
+    value: ''
+  - name: backendAppName
+    value: ''
+  - name: frontendStorageAccount
+    value: ''
+  - name: acrName
+    value: ''
+  - name: imageName
+    value: 'ai-poc-tranzaura'
+  - name: buildConfiguration
+    value: 'Release'
+
+stages:
+- stage: Build
+  displayName: Build and Test
+  jobs:
+  - job: BuildBackend
+    displayName: Build .NET backend
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '8.0.x'
+    - script: |
+        cd backend
+        dotnet restore
+        dotnet build --configuration $(buildConfiguration) --no-restore
+      displayName: 'dotnet restore & build'
+    - script: |
+        cd backend
+        dotnet test --configuration $(buildConfiguration) --no-build --verbosity normal
+      displayName: 'Run unit tests (backend)'
+    - script: |
+        cd backend
+        dotnet publish -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/backend
+      displayName: 'dotnet publish'
+    - publish: $(Build.ArtifactStagingDirectory)/backend
+      artifact: backend-drop
+
+  - job: BuildFrontend
+    displayName: Build Angular frontend
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '18.x'
+    - script: |
+        cd frontend
+        npm ci
+        npm run build -- --configuration production
+      displayName: 'npm ci & build (frontend)'
+    - publish: frontend/dist
+      artifact: frontend-dist
+
+- stage: Deploy_Dev
+  displayName: Deploy to Dev
+  dependsOn: Build
+  jobs:
+  - deployment: DeployBackendDev
+    displayName: Deploy backend to App Service (dev)
+    environment: 'dev'    # configure environment in Azure DevOps for approvals if desired
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: backend-drop
+          - task: AzureWebApp@1
+            displayName: 'Deploy backend to App Service (ZIP deploy)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appName: '$(backendAppName)-dev'
+              package: '$(Pipeline.Workspace)/backend-drop'
+
+  - deployment: DeployFrontendDev
+    displayName: Deploy frontend to Static Website (dev)
+    environment: 'dev'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: frontend-dist
+          - task: AzureCLI@2
+            displayName: 'Upload frontend to Storage Account static website (dev)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az storage blob upload-batch --account-name $(frontendStorageAccount) --source $(Pipeline.Workspace)/frontend-dist --destination '
+                $web --overwrite true
+
+- stage: Deploy_UAT
+  displayName: Deploy to UAT
+  dependsOn: Deploy_Dev
+  jobs:
+  - deployment: DeployBackendUAT
+    displayName: Deploy backend to App Service (uat)
+    environment: 'uat'   # configure environment approvals in Azure DevOps UI
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: backend-drop
+          - task: AzureWebApp@1
+            displayName: 'Deploy backend to App Service (UAT)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appName: '$(backendAppName)-uat'
+              package: '$(Pipeline.Workspace)/backend-drop'
+
+  - deployment: DeployFrontendUAT
+    displayName: Deploy frontend to Static Website (uat)
+    environment: 'uat'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: frontend-dist
+          - task: AzureCLI@2
+            displayName: 'Upload frontend to Storage Account static website (uat)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az storage blob upload-batch --account-name $(frontendStorageAccount) --source $(Pipeline.Workspace)/frontend-dist --destination '
+                $web --overwrite true
+          - task: NodeTool@0
+            displayName: 'Run Playwright e2e against UAT'
+            inputs:
+              versionSpec: '18.x'
+          - script: |
+              chmod +x ./scripts/run-playwright-staging.sh || true
+              export PLAYWRIGHT_BASE_URL=$(stagingFrontendUrl)
+              ./scripts/run-playwright-staging.sh
+            displayName: 'Run Playwright e2e (UAT)'
+            env:
+              PLAYWRIGHT_BASE_URL: $(stagingFrontendUrl)
+          - script: |
+              chmod +x ./scripts/run-smoke-tests.sh || true
+              export API_BASE_URL=$(stagingApiUrl)
+              ./scripts/run-smoke-tests.sh
+            displayName: 'Run smoke tests (UAT)'
+            env:
+              API_BASE_URL: $(stagingApiUrl)
+
+- stage: Deploy_Prod
+  displayName: Deploy to Production
+  dependsOn: Deploy_UAT
+  jobs:
+  - job: ManualApproval
+    displayName: 'Manual approval (Gate)'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: ManualValidation@0
+      inputs:
+        instructions: 'Approve production deployment'
+
+  - deployment: DeployBackendProd
+    displayName: Deploy backend to App Service (prod)
+    environment: 'prod'   # configure environment approvals & checks in Azure DevOps
+    pool:
+      vmImage: 'ubuntu-latest'
+    dependsOn: ManualApproval
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: backend-drop
+          - task: AzureWebApp@1
+            displayName: 'Deploy backend to App Service (Prod)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appName: '$(backendAppName)'
+              package: '$(Pipeline.Workspace)/backend-drop'
+          - task: AzureCLI@2
+            displayName: 'Run DB migrations (optional)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Run EF Core migrations from pipeline if configured"
+                # Example: dotnet ef database update --project backend --configuration $(buildConfiguration)
+
+  - deployment: DeployFrontendProd
+    displayName: Deploy frontend to Static Website (prod)
+    environment: 'prod'
+    pool:
+      vmImage: 'ubuntu-latest'
+    dependsOn: ManualApproval
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: frontend-dist
+          - task: AzureCLI@2
+            displayName: 'Upload frontend to Storage Account static website (prod)'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az storage blob upload-batch --account-name $(frontendStorageAccount) --source $(Pipeline.Workspace)/frontend-dist --destination '
+                $web --overwrite true
+
+# Notes:
+# - Set pipeline variables (azureSubscription, resourceGroup, backendAppName, frontendStorageAccount, acrName) in the pipeline UI or use a variable group linked to Key Vault.
+# - Consider replacing frontend Storage Account deployment with Azure Static Web Apps or CDN depending on requirements.
+# - Use Azure Key Vault task or variable group to inject secrets (DB connection string, Key Vault secrets) into the pipeline securely.
+# - Configure environment approvals/gates in Azure DevOps for 'uat' and 'prod' environments.
+# - For container-based deploys: add Docker build/push to ACR and update AzureWebApp or Container Apps deployment to use the image.
