@@ -10,7 +10,7 @@ test.describe('Authorization flows', () => {
     await page.waitForLoadState('networkidle');
 
     // Nav should show Docs for admin (wait for app to render)
-    const docsLink = page.locator('nav.site-nav >> a.nav-link', { hasText: 'Docs' });
+    const docsLink = page.locator('nav.site-nav a.nav-link', { hasText: 'Docs' });
     await expect(docsLink).toBeVisible({ timeout: 10000 });
 
     await docsLink.click();

@@ -73,6 +73,14 @@ import { ServiceCenter } from './models/service-center';
         </div>
 
         <div class="field">
+          <label class="input-label">Inspection Type</label>
+          <select formControlName="inspectionType" aria-label="Inspection Type" class="select-native">
+            <option value="">-- Select inspection type --</option>
+            <option *ngFor="let i of inspectionTypes" [value]="i">{{ i }}</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label class="input-label">Appointment Date</label>
           <input type="date" formControlName="appointmentDate" class="date-input" aria-label="Appointment Date">
         </div>
@@ -131,6 +139,7 @@ export class HomepageComponent implements OnInit {
       assetMake: [''],
       serviceCenterId: ['', Validators.required],
       assetYear: [''],
+      inspectionType: [''],
       appointmentDate: [null, Validators.required],
       appointmentTime: [null, Validators.required],
       notes: ['']
@@ -146,6 +155,16 @@ export class HomepageComponent implements OnInit {
       'Freightliner', 'Peterbilt', 'Kenworth', 'Isuzu', 'Scania'
     ];
     this.assetMakesFiltered = [...this.assetMakes];
+
+    this.inspectionTypes = [
+      'Annual Roadworthiness Test (HGV/PSV)',
+      'Annual MOT',
+      'NCT / Commercial Vehicle Inspection (Ireland)',
+      'Trailer Inspection',
+      'Brakes & Suspension Check',
+      'Emission Test',
+      'Service & Safety Inspection'
+    ];
   }
 
   ngOnInit(): void {

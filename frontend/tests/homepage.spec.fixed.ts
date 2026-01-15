@@ -17,7 +17,7 @@ async function login(page) {
   if (!token) throw new Error('Login failed: could not obtain token');
 }
 
-test('homepage loads and shows lookups', async ({ page }) => {
+test('homepage loads and shows lookups and inspection dropdown', async ({ page }) => {
   await login(page);
   await page.goto('http://127.0.0.1:4200/');
   await page.waitForLoadState('networkidle');
@@ -40,7 +40,7 @@ test('homepage loads and shows lookups', async ({ page }) => {
     if (centerCount > 0) await expect(centerInput.first()).toBeVisible({ timeout: 10000 });
     if (selectCount > 0) await expect(selectInput.first()).toBeVisible({ timeout: 10000 });
   }
-  
+
   // If the inspection type select is present, select the first real option and verify
   const inspSelect = page.locator('select[aria-label="Inspection Type"]');
   if ((await inspSelect.count()) > 0) {
