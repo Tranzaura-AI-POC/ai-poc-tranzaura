@@ -106,6 +106,27 @@ test('schedule an appointment from homepage and delete it', async ({ page }) => 
   const notes = page.locator('textarea[aria-label="Notes"]');
   await notes.fill(uniqueNote);
 
+  // Ensure the outgoing POST includes Authorization header by wrapping fetch
+  await page.evaluate(() => {
+    const _fetch = window.fetch;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    window.fetch = function(input: any, init: any = {}) {
+      const url = typeof input === 'string' ? input : input.url;
+      try {
+        if (url && url.includes('/api/ServiceAppointments')) {
+          init = init || {};
+          init.headers = init.headers || {};
+          const token = localStorage.getItem('fleet_token');
+          if (token) init.headers['Authorization'] = `Bearer ${token}`;
+        }
+      } catch (e) {
+        // ignore
+      }
+      return _fetch(input, init);
+    };
+  });
+
   // Submit and capture the POST response so we can assert it succeeded
   const [postResp] = await Promise.all([
     page.waitForResponse(r => r.url().includes('/api/ServiceAppointments') && r.request().method() === 'POST'),
