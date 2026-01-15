@@ -41,7 +41,7 @@ test('homepage loads and shows lookups and inspection dropdown', async ({ page }
     if (selectCount > 0) await expect(selectInput.first()).toBeVisible({ timeout: 10000 });
   }
 
-  // If the inspection type select is present, select the first real option and verify
+  // If the inspection control is present, try native select first, otherwise use custom dropdown
   const inspSelect = page.locator('select[aria-label="Inspection Type"]');
   if ((await inspSelect.count()) > 0) {
     const opt = inspSelect.locator('option:not([value=""])').first();
@@ -49,6 +49,19 @@ test('homepage loads and shows lookups and inspection dropdown', async ({ page }
     if (val) {
       await page.selectOption('select[aria-label="Inspection Type"]', val);
       await expect(inspSelect).toHaveValue(val);
+    }
+  } else {
+    const inspInput = page.locator('input[aria-label="Inspection Type"]');
+    if ((await inspInput.count()) > 0) {
+      // open the custom list if toggle exists
+      const toggle = page.locator('button[aria-label="Toggle inspection list"]');
+      if ((await toggle.count()) > 0) await toggle.click();
+      const opt = page.locator('.options-list .option-item').first();
+      if ((await opt.count()) > 0) {
+        const text = (await opt.textContent())?.trim() || '';
+        await opt.click();
+        if (text) await expect(inspInput).toHaveValue(text);
+      }
     }
   }
 });

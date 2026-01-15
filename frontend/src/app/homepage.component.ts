@@ -74,10 +74,13 @@ import { ServiceCenter } from './models/service-center';
 
         <div class="field">
           <label class="input-label">Inspection Type</label>
-          <select formControlName="inspectionType" aria-label="Inspection Type" class="select-native">
-            <option value="">-- Select inspection type --</option>
-            <option *ngFor="let i of inspectionTypes" [value]="i">{{ i }}</option>
-          </select>
+          <div class="select-wrapper">
+            <input [value]="inspectionInput" class="select-input" placeholder="Start typing to search" (input)="inspectionInput=$any($event.target).value; filterInspections(inspectionInput); onInspectionInput(inspectionInput)" aria-label="Inspection Type">
+            <button type="button" class="select-toggle" (click)="toggleInspectionList()" aria-label="Toggle inspection list">▾</button>
+            <div *ngIf="showInspectionList" class="options-list">
+              <div *ngFor="let i of inspectionTypesFiltered" class="option-item" (click)="selectInspectionType(i)">{{ i }}</div>
+            </div>
+          </div>
         </div>
 
         <div class="field">
@@ -113,6 +116,10 @@ export class HomepageComponent implements OnInit {
   centers: ServiceCenter[] = [];
   assetYears: number[] = [];
   assetMakes: string[] = [];
+  inspectionTypes: string[] = [];
+  inspectionTypesFiltered: string[] = [];
+  inspectionInput = '';
+  showInspectionList = false;
   // filtered arrays shown in the dropdowns (support search)
   assetTypesFiltered: AssetType[] = [];
   centersFiltered: ServiceCenter[] = [];
@@ -165,6 +172,7 @@ export class HomepageComponent implements OnInit {
       'Emission Test',
       'Service & Safety Inspection'
     ];
+    this.inspectionTypesFiltered = [...this.inspectionTypes];
   }
 
   ngOnInit(): void {
@@ -230,6 +238,37 @@ export class HomepageComponent implements OnInit {
     this.assetYearsFiltered = this.assetYears.filter(y => String(y).includes(v));
   }
 
+  filterInspections(q: string): void {
+    const v = (q || '').toLowerCase();
+    this.inspectionTypesFiltered = this.inspectionTypes.filter(i => (i || '').toLowerCase().includes(v));
+  }
+
+  onInspectionInput(value: string): void {
+    const match = this.inspectionTypes.find(i => i === value);
+    if (match) {
+      this.form.controls['inspectionType'].setValue(match);
+    } else {
+      this.form.controls['inspectionType'].setValue('');
+    }
+  }
+
+  toggleInspectionList(): void {
+    if (!this.showInspectionList) {
+      this.showAssetTypeList = false;
+      this.showCenterList = false;
+      this.showMakeList = false;
+      this.showYearList = false;
+    }
+    this.showInspectionList = !this.showInspectionList;
+  }
+
+  selectInspectionType(name: string): void {
+    this.inspectionInput = name;
+    const match = this.inspectionTypes.find(i => i === name);
+    if (match) this.form.controls['inspectionType'].setValue(match);
+    this.showInspectionList = false;
+  }
+
   submit(): void {
     this.saveError = null;
     if (this.form.invalid) {
@@ -254,6 +293,7 @@ export class HomepageComponent implements OnInit {
     };
     if (raw.assetYear) payload.assetYear = Number(raw.assetYear);
     if (raw.assetMake) payload.assetMake = raw.assetMake;
+    if (raw.inspectionType) payload.inspectionType = raw.inspectionType;
 
     this.isSaving = true;
     this.fleet.createAppointment(payload).subscribe({

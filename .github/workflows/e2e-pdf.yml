@@ -1,14 +1,18 @@
 name: Playwright E2E + PDF
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch: {}
 
 jobs:
   e2e_pdf:
     name: Run Playwright E2E and publish PDF
+    # Temporarily skip running this job on push/merge to main because
+    # the workflow requires services that are only available on the
+    # developer's local machine. Re-enable when application is deployed
+    # to Azure and CI has access to required resources.
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
