@@ -7,7 +7,9 @@ async function login(page) {
   const unique = `e2e_admin_${Date.now()}`;
   const password = 'Password123!';
 
-  const token = await page.evaluate(async (u, p) => {
+  const token = await page.evaluate(async (opts) => {
+    const u = opts.u;
+    const p = opts.p;
     async function doLogin(username) {
       const res = await fetch('/api/Auth/login', {
         method: 'POST',
@@ -31,7 +33,7 @@ async function login(page) {
     const t = await doLogin(u);
     if (t) localStorage.setItem('fleet_token', t);
     return t;
-  }, unique, password);
+  }, { u: unique, p: password });
 
   if (!token) throw new Error('Login failed: could not obtain token (register or login)');
 }
