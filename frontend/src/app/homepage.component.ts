@@ -51,23 +51,23 @@ import { ServiceCenter } from './models/service-center';
         </div>
 
         <div class="field">
-          <label class="input-label">Service Center</label>
-          <div class="select-wrapper">
-            <input [value]="centerInput" class="select-input" placeholder="Start typing to search" (input)="centerInput=$any($event.target).value; filterCenters(centerInput); onServiceCenterInput(centerInput)" aria-label="Service Center">
-            <button type="button" class="select-toggle" (click)="toggleCenterList()" aria-label="Toggle centers list">▾</button>
-            <div *ngIf="showCenterList" class="options-list">
-              <div *ngFor="let s of centersFiltered" class="option-item" (click)="selectServiceCenter(s.name + ' — ' + s.city)">{{ s.name }} — {{ s.city }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field">
           <label class="input-label">Asset Year</label>
           <div class="select-wrapper">
             <input [value]="yearInput" class="select-input" placeholder="Start typing to filter" (input)="yearInput=$any($event.target).value; filterYears(yearInput)" aria-label="Asset Year">
             <button type="button" class="select-toggle" (click)="toggleYearList()" aria-label="Toggle years list">▾</button>
             <div *ngIf="showYearList" class="options-list">
               <div *ngFor="let y of assetYearsFiltered" class="option-item" (click)="selectYear(y)">{{ y }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="input-label">Service Center</label>
+          <div class="select-wrapper">
+            <input [value]="centerInput" class="select-input" placeholder="Start typing to search" (input)="centerInput=$any($event.target).value; filterCenters(centerInput); onServiceCenterInput(centerInput)" aria-label="Service Center">
+            <button type="button" class="select-toggle" (click)="toggleCenterList()" aria-label="Toggle centers list">▾</button>
+            <div *ngIf="showCenterList" class="options-list">
+              <div *ngFor="let s of centersFiltered" class="option-item" (click)="selectServiceCenter(s.name + ' — ' + s.city)">{{ s.name }} — {{ s.city }}</div>
             </div>
           </div>
         </div>
