@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService, ToastMessage } from './toast.service';
 
@@ -18,9 +18,13 @@ import { ToastService, ToastMessage } from './toast.service';
 export class ToastComponent {
   msgs: ToastMessage[] = [];
   private svc = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   constructor() {
-    this.svc.messages.subscribe(m => this.msgs = m);
+    this.svc.messages.subscribe(m => {
+      this.msgs = m;
+      try { this.cdr.markForCheck(); } catch { /* ignore */ }
+    });
   }
 
   dismiss(id: number) { this.svc.dismiss(id); }

@@ -13,6 +13,8 @@ export class ToastService {
     const msg: ToastMessage = { id: this.nextId++, text, type };
     const list = [...this.messages$.value, msg];
     this.messages$.next(list);
+    // Debug: log when toasts are shown to help local troubleshooting
+    try { console.log('ToastService.show:', type, text); } catch { /* no-op */ }
     if (timeout > 0) {
       setTimeout(() => this.dismiss(msg.id), timeout);
     }

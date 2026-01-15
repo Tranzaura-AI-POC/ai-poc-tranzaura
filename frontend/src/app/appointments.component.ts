@@ -13,25 +13,44 @@ import { ChangeDetectorRef } from '@angular/core';
   template: `
   <section class="container card" aria-labelledby="appointments-heading">
     <h2 id="appointments-heading">Appointments</h2>
-    <div class="appointments-toolbar" style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+    <div class="appointments-toolbar">
       <button class="btn-primary" (click)="loadAppointments()">Refresh</button>
+      <div class="filters">
+        <label class="filter-group">
+          <span class="filter-label">Asset Type</span>
+          <select [(ngModel)]="selectedAssetTypeId" (ngModelChange)="onFilterChange()" class="select-input">
+            <option [ngValue]="0">All</option>
+            <option *ngFor="let t of assetTypes" [ngValue]="t.id">{{ t.name }}</option>
+          </select>
+        </label>
+        <label class="filter-group">
+          <span class="filter-label">Service Center</span>
+          <select [(ngModel)]="selectedServiceCenterId" (ngModelChange)="onFilterChange()" class="select-input">
+            <option [ngValue]="0">All</option>
+            <option *ngFor="let s of serviceCenters" [ngValue]="s.id">{{ s.name }}</option>
+          </select>
+        </label>
+      </div>
     </div>
-    <div *ngIf="appointments.length === 0">No appointments yet.</div>
+    <div *ngIf="filteredAppointments.length === 0">No appointments yet.</div>
 
-    <div *ngIf="appointments.length > 0" class="appointments-grid">
-      <article *ngFor="let ap of appointments" class="appointment-card">
+    <div *ngIf="filteredAppointments.length > 0" class="appointments-grid">
+      <article *ngFor="let ap of filteredAppointments" class="appointment-card" [class.expanded]="expandedIds.has(ap.id)" [attr.data-id]="ap.id">
         <header class="card-header" style="display:flex;justify-content:space-between;align-items:start">
           <div>
             <div class="title">{{ getAssetTypeName(ap.assetTypeId) || 'Asset' }} • {{ ap.assetMake || 'Unknown' }} {{ ap.assetYear || '' }}</div>
             <div class="meta">#{{ ap.id }} — {{ formatDate(ap.appointmentDate) }}</div>
           </div>
-          <div style="display:flex;gap:8px">
+          <div style="display:flex;gap:8px;align-items:center">
             <button class="btn-primary" *ngIf="editingId !== ap.id" (click)="startEdit(ap)">Edit</button>
             <button class="btn-primary" style="background:#ef4444" *ngIf="editingId !== ap.id" (click)="deleteAppointment(ap.id)">Delete</button>
             <ng-container *ngIf="editingId === ap.id">
               <button class="btn-primary" (click)="saveEdit()">Save</button>
               <button class="btn-primary" style="background:#6b7280" (click)="cancelEdit()">Cancel</button>
             </ng-container>
+            <button class="btn btn-secondary more-btn" *ngIf="showMore[ap.id] || (ap.notes && ap.notes.length > 200)" (click)="toggleExpand(ap.id)">
+              {{ expandedIds.has(ap.id) ? 'Less' : 'More' }}
+            </button>
           </div>
         </header>
 
@@ -72,6 +91,12 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
   editingId: number | null = null;
   editModel: any = {};
+  // track which appointment tiles are expanded and whether to show the "More" control
+  expandedIds = new Set<number>();
+  showMore: { [id: number]: boolean } = {};
+  selectedAssetTypeId: number = 0;
+  selectedServiceCenterId: number = 0;
+  resizeHandler: any = null;
 
   private routerSub: Subscription | null = null;
 
@@ -92,10 +117,28 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     // Extra reload shortly after init to avoid a startup race where auth
     // headers or other providers may not be ready yet on first call.
     setTimeout(() => this.loadAppointments(), 250);
+    // attach resize handler to re-evaluate overflow when window size changes
+    this.resizeHandler = this.evaluateOverflow.bind(this);
+    window.addEventListener('resize', this.resizeHandler);
+  }
+
+  onFilterChange(): void {
+    try { this.cdr.detectChanges(); } catch {}
+    // re-evaluate overflow after the filtered list updates
+    setTimeout(() => this.evaluateOverflow(), 120);
+  }
+
+  get filteredAppointments(): any[] {
+    return this.appointments.filter(a => {
+      if (this.selectedAssetTypeId && a.assetTypeId !== this.selectedAssetTypeId) return false;
+      if (this.selectedServiceCenterId && a.serviceCenterId !== this.selectedServiceCenterId) return false;
+      return true;
+    });
   }
 
   ngOnDestroy(): void {
     if (this.routerSub) { this.routerSub.unsubscribe(); this.routerSub = null; }
+    if (this.resizeHandler) { window.removeEventListener('resize', this.resizeHandler); this.resizeHandler = null; }
   }
 
   loadLookups(): void {
@@ -107,7 +150,73 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     this.fleet.getAppointments().subscribe(a => {
       this.appointments = a || [];
       try { this.cdr.detectChanges(); } catch (e) { console.warn('detectChanges failed', e); }
+      // evaluate whether any appointment card content overflows so we can show a "More" toggle
+      // delay slightly to allow layout to stabilise (images/fonts/etc)
+      setTimeout(() => this.evaluateOverflow(), 250);
     });
+  }
+
+  evaluateOverflow(): void {
+    try {
+      // ensure we run after the browser painted
+      requestAnimationFrame(() => {
+        const cards = document.querySelectorAll('.appointments-grid .appointment-card');
+        cards.forEach(c => {
+          const idAttr = c.getAttribute('data-id');
+          if (!idAttr) return;
+          const id = Number(idAttr);
+          const body = c.querySelector('.card-body') as HTMLElement | null;
+          if (!body) return;
+          // check specific notes element first for overflow
+          const notesEl = body.querySelector('.notes') as HTMLElement | null;
+          let overflows = false;
+          if (notesEl) {
+            // primary: check if the notes element is visually clipped by measuring full height
+            try {
+              const clone = notesEl.cloneNode(true) as HTMLElement;
+              const cs = window.getComputedStyle(notesEl);
+              // apply computed width and font styles so measurement matches
+              clone.style.width = cs.width;
+              clone.style.whiteSpace = cs.whiteSpace;
+              clone.style.font = cs.font;
+              clone.style.padding = cs.padding;
+              clone.style.lineHeight = cs.lineHeight;
+              clone.style.visibility = 'hidden';
+              clone.style.position = 'absolute';
+              clone.style.left = '-9999px';
+              clone.style.top = '0';
+              clone.style.maxWidth = cs.maxWidth;
+              clone.style.boxSizing = cs.boxSizing;
+              document.body.appendChild(clone);
+              const fullHeight = clone.scrollHeight || clone.offsetHeight || 0;
+              const visibleHeight = notesEl.clientHeight || 0;
+              document.body.removeChild(clone);
+              overflows = fullHeight > visibleHeight + 2;
+            } catch (e) {
+              // fallback to basic metrics and heuristics
+              overflows = (notesEl.scrollHeight > notesEl.clientHeight + 2) || (notesEl.scrollWidth > notesEl.clientWidth + 2);
+              if (!overflows) {
+                const txt = (notesEl.textContent || '').trim();
+                if (txt.length > 180) overflows = true;
+              }
+            }
+          } else {
+            // if no notes element, fall back to body overflow detection
+            overflows = (body.scrollHeight > body.clientHeight + 2) || (body.scrollWidth > body.clientWidth + 2);
+          }
+          this.showMore[id] = !!overflows;
+        });
+        try { this.cdr.detectChanges(); } catch {}
+      });
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  toggleExpand(id: number): void {
+    if (this.expandedIds.has(id)) this.expandedIds.delete(id);
+    else this.expandedIds.add(id);
+    try { this.cdr.detectChanges(); } catch {}
   }
 
   startEdit(ap: any): void {

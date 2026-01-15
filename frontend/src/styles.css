@@ -134,13 +134,26 @@ html, body {
 /* Appointments grid and cards */
 .appointments-grid{
   display: grid;
-  /* Flow items into columns so they fill two rows vertically */
-  grid-auto-flow: column;
-  grid-template-rows: repeat(2, auto);
-  grid-auto-columns: minmax(260px, 1fr);
+  /* Use responsive columns but cap visual density to ~3 columns on wide screens */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 14px;
   margin-top: 12px;
   align-items: start;
+  justify-items: stretch;
+  /* Prevent grid children from overflowing the main container */
+  box-sizing: border-box;
+}
+
+/* Appointments toolbar and filter styling to match app look-and-feel */
+.appointments-toolbar{ display:flex; gap:12px; margin-bottom:12px; align-items:center; flex-wrap:wrap }
+.appointments-toolbar .filters{ display:flex; gap:10px; align-items:center }
+.appointments-toolbar .filter-group{ display:flex; flex-direction:column; font-size:13px }
+.appointments-toolbar .filter-label{ color:var(--text-muted); font-size:13px; margin-bottom:6px; font-weight:600 }
+.appointments-toolbar .filter-group .select-input{ min-width:160px; padding:8px 10px }
+
+
+@media (min-width: 1200px) {
+  .appointments-grid { grid-template-columns: repeat(3, 1fr); }
 }
 .appointment-card{
   background: linear-gradient(180deg, rgba(15,123,200,0.08) 0%, rgba(63,162,222,0.09) 35%, #f2fbff 60%);
@@ -161,6 +174,26 @@ html, body {
 .appointment-card .meta{ color:var(--text-muted); font-size:12px }
 .appointment-card .card-body .row{ margin:6px 0; color:var(--text-muted); font-size:13px }
 .appointment-card .notes{ color:var(--text-dark); display:inline-block; margin-left:8px }
+
+/* Ensure appointment tiles are a consistent size and provide an expandable state */
+.appointment-card{
+  /* fixed collapsed height to keep tiles uniform */
+  height: 220px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.appointment-card .card-body{
+  overflow: hidden;
+  flex: 1 1 auto;
+}
+.appointment-card.expanded{
+  /* expanded tiles grow to fit content */
+  height: auto;
+}
+.more-btn{ padding:6px 8px; font-size:13px; border-radius:8px; background:transparent; border:1px solid rgba(20,39,61,0.06); cursor:pointer }
+.more-btn:hover{ background:rgba(20,39,61,0.04) }
 
 /* Sign-in / Auth styles */
 .auth-card{ max-width:420px; margin:20px auto; padding:28px; border-radius:12px }
@@ -280,11 +313,11 @@ input[type="password"]::-webkit-clear-button {
 .btn-secondary{ background:transparent; border:1px solid rgba(20,39,61,0.06) }
 
 /* Toast styles */
-.toast-wrap{ position:fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:10px; z-index:9999 }
-.toast{ min-width:220px; max-width:360px; padding:10px 12px; border-radius:10px; box-shadow:0 12px 36px rgba(2,6,23,0.18); display:flex; align-items:center; gap:10px; position:relative }
-.toast .toast-body{ flex:1; font-weight:600; color:var(--text-dark) }
+.toast-wrap{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); display:flex; flex-direction:column; gap:10px; z-index:9999; align-items:center }
+.toast{ min-width:220px; max-width:420px; padding:12px 16px; border-radius:12px; box-shadow:0 18px 48px rgba(2,6,23,0.18); display:flex; align-items:center; gap:12px; position:relative }
+.toast .toast-body{ flex:1; font-weight:600; color:#ff8c00 }
 .toast.info{ background: linear-gradient(180deg,#fff,#fbfbfc); border:1px solid rgba(20,39,61,0.06) }
-.toast.success{ background: linear-gradient(180deg,#effaf0,#e7fff5); border:1px solid rgba(6,150,88,0.08); color:var(--success) }
+.toast.success{ background: linear-gradient(180deg,#fff3e0,#fff0e0); border:1px solid rgba(255,165,0,0.12); color:#ff8c00 }
 .toast.error{ background: linear-gradient(180deg,#fff6f6,#fff1f0); border:1px solid rgba(155,28,28,0.08); color:#9b1c1c }
 .toast-close{ position:absolute; right:8px; top:6px; border:none; background:transparent; font-size:16px; cursor:pointer; color:rgba(20,39,61,0.5) }
 

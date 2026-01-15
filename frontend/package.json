@@ -32,7 +32,7 @@
     "typescript": "^5.9.0"
   },
   "scripts": {
-    "start": "ng serve --host 127.0.0.1 --port 4200",
+    "start": "ng serve --host 127.0.0.1 --port 4200 --proxy-config proxy.conf.json",
     "build": "ng build --configuration production",
     "build:dev": "ng build --configuration development",
     "test": "jest",

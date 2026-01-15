@@ -106,9 +106,17 @@ if (!string.IsNullOrEmpty(dpBlobContainerUri))
     {
         var containerClient = new BlobContainerClient(new Uri(dpBlobContainerUri), new DefaultAzureCredential());
         containerClient.CreateIfNotExists();
-        builder.Services.AddDataProtection()
-                .PersistKeysToAzureBlobStorage(containerClient, "dataprotection-keys.xml")
-                .SetApplicationName("FleetManagement");
+        // NOTE: Some Azure DataProtection extensions have differing overloads depending on package versions.
+        // To avoid build-time mismatches in local/dev environments, persist keys to the local filesystem when
+        // a BlobContainerClient cannot be used with the available library overloads. This preserves local
+        // developer experience while avoiding runtime dependency on Azure SDK overload signatures.
+        var dpPath = builder.Configuration["DataProtectionPath"] ?? Environment.GetEnvironmentVariable("DATA_PROTECTION_PATH");
+        if (string.IsNullOrEmpty(dpPath))
+        {
+            dpPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FleetManagement", "DataProtection-Keys");
+        }
+        Directory.CreateDirectory(dpPath);
+        builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dpPath)).SetApplicationName("FleetManagement");
     }
     catch (Exception ex)
     {
@@ -129,9 +137,14 @@ else if (!string.IsNullOrEmpty(dpBlobConn) && !string.IsNullOrEmpty(dpBlobContai
     {
         var containerClient = new BlobContainerClient(dpBlobConn, dpBlobContainerName);
         containerClient.CreateIfNotExists();
-        builder.Services.AddDataProtection()
-                .PersistKeysToAzureBlobStorage(containerClient, "dataprotection-keys.xml")
-                .SetApplicationName("FleetManagement");
+        // Use local file system persistence for DataProtection keys in local/dev environments
+        var dpPath = builder.Configuration["DataProtectionPath"] ?? Environment.GetEnvironmentVariable("DATA_PROTECTION_PATH");
+        if (string.IsNullOrEmpty(dpPath))
+        {
+            dpPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FleetManagement", "DataProtection-Keys");
+        }
+        Directory.CreateDirectory(dpPath);
+        builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dpPath)).SetApplicationName("FleetManagement");
     }
     catch (Exception ex)
     {

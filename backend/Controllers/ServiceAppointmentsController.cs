@@ -2,6 +2,7 @@ using FleetManagement.Models;
 using FleetManagement.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace FleetManagement.Controllers
@@ -12,7 +13,13 @@ namespace FleetManagement.Controllers
     public class ServiceAppointmentsController : ControllerBase
     {
         private readonly IFleetRepository _repo;
-        public ServiceAppointmentsController(IFleetRepository repo) => _repo = repo;
+        private readonly ILogger<ServiceAppointmentsController> _logger;
+
+        public ServiceAppointmentsController(IFleetRepository repo, ILogger<ServiceAppointmentsController> logger)
+        {
+            _repo = repo;
+            _logger = logger;
+        }
 
         [HttpGet]
         [AllowAnonymous]

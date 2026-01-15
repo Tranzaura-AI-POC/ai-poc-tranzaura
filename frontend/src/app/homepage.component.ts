@@ -1,8 +1,9 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FleetService } from './fleet.service';
+import { ToastService } from './toast.service';
 import { AssetType } from './models/asset-type';
 import { ServiceCenter } from './models/service-center';
 
@@ -103,7 +104,7 @@ import { ServiceCenter } from './models/service-center';
         </div>
       </form>
 
-      <p *ngIf="saved" class="success" role="status" aria-live="polite">Appointment saved successfully!</p>
+      
     </section>
 
     <!-- Appointments moved to its own route -->
@@ -139,6 +140,8 @@ export class HomepageComponent implements OnInit {
   isSaving = false;
   saveError: string | null = null;
   year = new Date().getFullYear();
+
+  private toast = inject(ToastService);
 
   constructor(private fb: FormBuilder, private fleet: FleetService) {
     this.form = this.fb.group({
@@ -298,11 +301,20 @@ export class HomepageComponent implements OnInit {
     this.isSaving = true;
     this.fleet.createAppointment(payload).subscribe({
       next: () => {
-        this.saved = true;
         this.isSaving = false;
         this.form.reset();
+        // Clear custom dropdown inputs and close lists so the form appears reset
+        this.assetTypeInput = '';
+        this.centerInput = '';
+        this.makeInput = '';
+        this.yearInput = '';
+        this.inspectionInput = '';
+        this.showAssetTypeList = false;
+        this.showCenterList = false;
+        this.showMakeList = false;
+        this.showYearList = false;
         this.loadAppointments();
-        setTimeout(() => (this.saved = false), 3500);
+        this.toast.show('Appointment saved successfully!', 'success');
       },
       error: (err) => {
         console.error('Save failed', err);
