@@ -89,37 +89,37 @@ import { CommonModule } from '@angular/common';
 export class TrainingComponent {
   vscodeResources = [
     {
-      title: 'Getting started with Copilot in VS Code — Quick start',
-      url: 'https://docs.github.com/en/copilot/getting-started-with-github-copilot-in-visual-studio-code',
-      desc: 'Official GitHub documentation covering installation, basic editing workflows and tips for accepting suggestions in VS Code.'
+      title: 'GitHub Copilot for VS Code — Overview',
+      url: 'https://code.visualstudio.com/docs/copilot/overview#:~:text=GitHub%20Copilot%20is%20an%20AI,based%20on%20your%20current%20context.',
+      desc: 'Official VS Code docs providing an overview of GitHub Copilot, what it does, and how it integrates into the editor.'
     },
     {
-      title: 'GitHub Copilot overview and guidance',
-      url: 'https://docs.github.com/en/copilot',
-      desc: 'High-level guidance, recommended practices and links to deeper topics useful for frontend developers.'
+      title: 'Copilot for VS Code — Features reference',
+      url: 'https://code.visualstudio.com/docs/copilot/reference/copilot-vscode-features',
+      desc: 'Detailed feature reference for Copilot in VS Code: inline completions, chat, settings and usage patterns.'
     },
     {
-      title: 'Official GitHub Copilot videos (YouTube channel)',
-      url: 'https://www.youtube.com/@GitHub/videos',
-      desc: 'Browse short demos and walkthroughs from the official GitHub channel — good for quick visual learning.'
+      title: 'Microsoft Learn: Copilot learning path',
+      url: 'https://learn.microsoft.com/en-us/training/paths/copilot/',
+      desc: 'A guided Microsoft Learn path with modules and hands-on exercises to learn Copilot concepts and workflows.'
     }
   ];
 
   vsResources = [
     {
-      title: 'Getting started with Copilot in Visual Studio — Quick start',
-      url: 'https://docs.github.com/en/copilot/getting-started-with-github-copilot-in-visual-studio',
-      desc: 'Step-by-step instructions for enabling Copilot in Visual Studio and using it to edit C# and .NET projects.'
+      title: 'Visual Studio — GitHub Copilot: Install and states',
+      url: 'https://learn.microsoft.com/en-us/visualstudio/ide/visual-studio-github-copilot-install-and-states?view=visualstudio',
+      desc: 'Installation, licensing and supported states for GitHub Copilot in Visual Studio; troubleshooting and requirements.'
     },
     {
-      title: 'GitHub Copilot for Visual Studio (Microsoft Learn)',
-      url: 'https://learn.microsoft.com/en-us/visualstudio/ide/github-copilot',
-      desc: 'Microsoft Learn guidance and best practices for Visual Studio users integrating Copilot into development flows.'
+      title: 'Visual Studio — GitHub Copilot Chat',
+      url: 'https://learn.microsoft.com/en-us/visualstudio/ide/visual-studio-github-copilot-chat?view=visualstudio',
+      desc: 'Guide to using Copilot Chat inside Visual Studio: commands, workflows and examples for developer productivity.'
     },
     {
-      title: 'Visual Studio channel — Copilot demos & walkthroughs',
-      url: 'https://www.youtube.com/@VisualStudio/videos',
-      desc: 'Practical demos showing Copilot in real-world .NET scenarios, useful for backend changes and migrations.'
+      title: 'Visual Studio — Copilot video playlist',
+      url: 'https://www.youtube.com/playlist?list=PLReL099Y5nRckZDdcQ21UigO9pKa14yxC',
+      desc: 'YouTube playlist of Visual Studio videos showcasing GitHub Copilot usage, demos and walkthroughs.'
     }
   ];
 
@@ -130,6 +130,8 @@ export class TrainingComponent {
       if (u.hostname.includes('youtube.com')) {
         const vid = u.searchParams.get('v');
         if (vid) return `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+        const list = u.searchParams.get('list');
+        if (list) return `https://via.placeholder.com/160x90.png?text=YouTube+Playlist`;
       }
       if (u.hostname === 'youtu.be') {
         const vid = u.pathname.slice(1);

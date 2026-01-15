@@ -251,10 +251,10 @@ input[type="password"]::-webkit-clear-button {
 }
 /* Training page thumbnails and layout */
 .training-list{ padding:0; margin:0 }
-.training-item{ display:flex; gap:16px; align-items:flex-start; margin:12px 0; list-style:none; padding:12px; border-radius:10px; background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,250,0.95)); border:1px solid rgba(20,39,61,0.04); box-shadow: 0 6px 18px rgba(2,6,23,0.04) }
+.training-item{ display:flex; gap:16px; align-items:center; margin:12px 0; list-style:none; padding:12px; border-radius:10px; background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,250,0.95)); border:1px solid rgba(20,39,61,0.04); box-shadow: 0 6px 18px rgba(2,6,23,0.04) }
 .training-thumb{ width:160px; height:90px; display:flex; align-items:center; justify-content:center; border-radius:8px; flex-shrink:0 }
 .training-thumb svg{ width:100%; height:100%; border-radius:8px }
-.training-meta{ display:block; max-width:calc(var(--content-max-width) - 200px) }
+.training-meta{ display:flex; flex-direction:column; justify-content:center; max-width:calc(var(--content-max-width) - 200px) }
 .training-meta a{ font-weight:700; color:var(--text-dark); text-decoration:none }
 .training-meta a:hover{ text-decoration:underline }
 .training-desc{ margin:8px 0 0; color:var(--text-muted); font-size:14px }
