@@ -38,9 +38,9 @@ html, body {
 
 .app-root { display:block; }
 
-.homepage-root{ padding: 56px 24px; max-width:var(--content-max-width); margin:0 auto; }
+.homepage-root{ padding: 20px 24px; max-width:var(--content-max-width); margin:0 auto; }
 
-.hero{ display:flex; gap:28px; align-items:center; margin-bottom:28px; }
+.hero{ display:flex; gap:28px; align-items:center; margin-bottom:12px; }
 .hero-inner{ flex:1 }
 .title{ font-size:34px; margin:0 0 8px; font-weight:700; letter-spacing:-0.02em }
 .subtitle{ margin:0; color:var(--muted); font-size:15px }
