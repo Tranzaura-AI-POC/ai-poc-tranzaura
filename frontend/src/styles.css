@@ -63,6 +63,10 @@ html, body {
   display:block;
 }
 
+/* Brand container alignment */
+.brand{ display:flex; align-items:center; gap:6px }
+.brand-link{ display:flex; align-items:center; gap:6px }
+
 .container{ background: var(--card); border-radius:12px; padding:24px; box-shadow: 0 6px 20px rgba(2,6,23,0.06); max-width:var(--content-max-width); margin:0 auto; }
 .card{ border:1px solid rgba(15,23,42,0.06); }
 
@@ -98,6 +102,11 @@ html, body {
 .site-header-inner{ display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto }
 .brand-link{ font-weight:700; color:var(--text-dark); text-decoration:none; font-size:18px }
 .brand-accent{ color:var(--brand-orange); margin-left:4px }
+
+/* Header logo (small Tranzaura mark) */
+.header-mark{ display:inline-block; width:120px; height:26px; vertical-align:middle; margin-left:6px; background:#000; border-radius:6px; padding:3px; box-sizing: border-box }
+.header-mark .header-logo{ width:100%; height:100%; display:block; object-fit:contain }
+.header-logo{ display:inline-block; vertical-align:middle }
 .site-nav{ display:flex; gap:12px }
 .nav-link{ color:var(--text-muted); text-decoration:none; padding:6px 8px; border-radius:6px }
 .nav-link:hover, .nav-link:focus{ color:var(--text-dark); background:var(--glass); outline:none }
