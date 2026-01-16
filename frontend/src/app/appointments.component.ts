@@ -30,7 +30,7 @@ import { AuthService } from './auth.service';
             <option *ngFor="let s of serviceCenters" [ngValue]="s.id">{{ s.name }}</option>
           </select>
         </label>
-        <button class="btn btn-secondary" (click)="clearFilters()">Clear filters</button>
+        <button class="btn-primary" (click)="clearFilters()">Clear filters</button>
       </div>
       <div class="toolbar-actions">
         <button class="btn-primary" (click)="loadAppointments()">Refresh</button>
@@ -64,32 +64,46 @@ import { AuthService } from './auth.service';
             <div class="row"><strong>Notes:</strong> <span class="notes">{{ ap.notes || '—' }}</span></div>
           </div>
 
-          <form *ngIf="editingId === ap.id" (ngSubmit)="saveEdit()" style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;gap:8px;align-items:center">
-              <label style="flex:1">
-                Date
-                <input type="date" [(ngModel)]="editModel.appointmentDateInput" (change)="onDatePicked($event)" name="appointmentDate" class="date-input" />
-              </label>
-              <label style="width:220px">
-                Time
-                <input type="time" [(ngModel)]="editModel.appointmentTime" (change)="onTimePicked($event)" name="appointmentTime" class="date-input" />
-              </label>
-            </div>
-            <label>
-              Asset Make
-              <input type="text" [(ngModel)]="editModel.assetMake" name="assetMake" class="select-input" />
-            </label>
-            <label>
-              Asset Year
-              <input type="number" [(ngModel)]="editModel.assetYear" name="assetYear" class="select-input" />
-            </label>
-            <label>
-              Notes
-              <textarea [(ngModel)]="editModel.notes" name="notes" rows="3" class="select-input"></textarea>
-            </label>
-          </form>
+          <!-- Inline editing removed; editing now occurs in a modal dialog to improve usability -->
         </div>
       </article>
+    </div>
+
+    <!-- Edit appointment modal dialog -->
+    <div *ngIf="editingId !== null" class="confirm-backdrop" (click)="cancelEdit()">
+      <div class="confirm-dialog card" role="dialog" aria-modal="true" aria-labelledby="edit-heading" (click)="$event.stopPropagation()">
+        <h3 id="edit-heading">Edit appointment #{{ editingId }}</h3>
+        <form (ngSubmit)="saveEdit()" style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <label style="flex:1">
+              Date
+              <input type="date" [(ngModel)]="editModel.appointmentDateInput" (change)="onDatePicked($event)" name="modalAppointmentDate" class="date-input" />
+            </label>
+            <label style="width:220px">
+              Time
+              <input type="time" [(ngModel)]="editModel.appointmentTime" (change)="onTimePicked($event)" name="modalAppointmentTime" class="date-input" />
+            </label>
+          </div>
+          <div style="display:flex;gap:8px">
+            <label style="flex:1">
+              Asset Make
+              <input type="text" [(ngModel)]="editModel.assetMake" name="modalAssetMake" class="select-input" />
+            </label>
+            <label style="width:140px">
+              Asset Year
+              <input type="number" [(ngModel)]="editModel.assetYear" name="modalAssetYear" class="select-input" />
+            </label>
+          </div>
+          <label>
+            Notes
+            <textarea [(ngModel)]="editModel.notes" name="modalNotes" rows="4" class="select-input"></textarea>
+          </label>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+            <button type="button" class="btn-secondary" (click)="cancelEdit()">Cancel</button>
+            <button type="submit" class="btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
     </div>
     
     <!-- Styled confirmation dialog (in-app) -->
