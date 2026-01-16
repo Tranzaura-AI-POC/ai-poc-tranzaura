@@ -151,6 +151,10 @@ html, body {
 .appointments-toolbar .filter-label{ color:var(--text-muted); font-size:13px; margin-bottom:6px; font-weight:600 }
 .appointments-toolbar .filter-group .select-input{ min-width:160px; padding:8px 10px }
 
+/* Right-aligned actions in the appointments toolbar */
+.appointments-toolbar .toolbar-actions{ margin-left:auto; display:flex; gap:8px; align-items:center }
+.appointments-toolbar .toolbar-actions .btn-primary{ padding:8px 14px }
+
 
 @media (min-width: 1200px) {
   .appointments-grid { grid-template-columns: repeat(3, 1fr); }

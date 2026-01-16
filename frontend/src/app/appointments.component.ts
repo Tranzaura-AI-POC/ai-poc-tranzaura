@@ -14,7 +14,6 @@ import { ChangeDetectorRef } from '@angular/core';
   <section class="container card" aria-labelledby="appointments-heading">
     <h2 id="appointments-heading">Appointments</h2>
     <div class="appointments-toolbar">
-      <button class="btn-primary" (click)="loadAppointments()">Refresh</button>
       <div class="filters">
         <label class="filter-group">
           <span class="filter-label">Asset Type</span>
@@ -30,6 +29,9 @@ import { ChangeDetectorRef } from '@angular/core';
             <option *ngFor="let s of serviceCenters" [ngValue]="s.id">{{ s.name }}</option>
           </select>
         </label>
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn-primary" (click)="loadAppointments()">Refresh</button>
       </div>
     </div>
     <div *ngIf="filteredAppointments.length === 0">No appointments yet.</div>
