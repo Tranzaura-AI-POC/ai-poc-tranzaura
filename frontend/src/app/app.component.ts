@@ -16,7 +16,7 @@ import { AdminOnlyDirective } from './admin-only.directive';
   <header *ngIf="auth.isAuthenticated()" class="site-header" role="banner">
     <div class="site-header-inner">
       <div class="brand">
-        <a routerLink="/" class="brand-link">Fleet<span class="brand-accent">Hub</span></a>
+        <a routerLink="/" class="brand-link">Fleet<span class="brand-accent">Hub</span> by <span class="header-mark"><img src="assets/Tranzaura_Logo_Menu.svg" alt="Tranzaura" class="header-logo"/></span></a>
       </div>
       <nav class="site-nav" role="navigation" aria-label="Main navigation">
         <a class="nav-link" routerLink="/">Home</a>
