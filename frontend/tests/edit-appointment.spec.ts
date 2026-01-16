@@ -49,27 +49,34 @@ test('edit appointment updates backend and UI', async ({ page, request }) => {
     await page.goto('http://127.0.0.1:4200/appointments');
     await page.waitForLoadState('networkidle');
 
-    // Open first appointment for edit
+    // Open first appointment for edit (opens a modal dialog)
     const editBtn = page.getByRole('button', { name: 'Edit' }).first();
     await expect(editBtn).toBeVisible({ timeout: 5000 });
     await editBtn.click();
 
-    // Fill date and time (native inputs)
-    const dateInput = page.getByRole('textbox', { name: 'Date' }).first();
+    // Modal should appear; scope inputs to the modal to avoid ambiguity
+    const modal = page.locator('.confirm-dialog');
+    await expect(modal).toBeVisible({ timeout: 5000 });
+
+    // Fill date and time (native inputs inside modal)
+    const dateInput = modal.getByLabel('Date');
     await expect(dateInput).toBeVisible();
     await dateInput.fill(dateToSet);
 
-    const timeInput = page.getByRole('textbox', { name: 'Time' }).first();
+    const timeInput = modal.getByLabel('Time');
     await expect(timeInput).toBeVisible();
     await timeInput.fill(timeToSet);
 
-    // Save
-    const saveBtn = page.getByRole('button', { name: 'Save' }).first();
+    // Save via modal Save button
+    const saveBtn = modal.getByRole('button', { name: 'Save' });
     await expect(saveBtn).toBeVisible();
     await Promise.all([
       page.waitForResponse(resp => resp.url().includes('/api/ServiceAppointments') && resp.request().method() === 'PUT', { timeout: 5000 }).catch(() => null),
       saveBtn.click()
     ]);
+
+    // wait for modal to close
+    await expect(modal).not.toBeVisible({ timeout: 3000 }).catch(() => {});
 
     // Wait briefly for UI to update
     await page.waitForTimeout(500);
