@@ -29,6 +29,7 @@ import { ChangeDetectorRef } from '@angular/core';
             <option *ngFor="let s of serviceCenters" [ngValue]="s.id">{{ s.name }}</option>
           </select>
         </label>
+        <button class="btn btn-secondary" (click)="clearFilters()">Clear filters</button>
       </div>
       <div class="toolbar-actions">
         <button class="btn-primary" (click)="loadAppointments()">Refresh</button>
@@ -128,6 +129,12 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     try { this.cdr.detectChanges(); } catch {}
     // re-evaluate overflow after the filtered list updates
     setTimeout(() => this.evaluateOverflow(), 120);
+  }
+
+  clearFilters(): void {
+    this.selectedAssetTypeId = 0;
+    this.selectedServiceCenterId = 0;
+    this.onFilterChange();
   }
 
   get filteredAppointments(): any[] {
