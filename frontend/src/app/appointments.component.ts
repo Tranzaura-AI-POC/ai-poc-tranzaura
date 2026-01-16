@@ -47,7 +47,7 @@ import { AuthService } from './auth.service';
           </div>
           <div style="display:flex;gap:8px;align-items:center">
             <button class="btn-primary" *ngIf="editingId !== ap.id" (click)="startEdit(ap)">Edit</button>
-            <button class="btn-primary" style="background:#ef4444" *ngIf="editingId !== ap.id" (click)="deleteAppointment(ap.id)">Delete</button>
+            <button class="btn-primary" style="background:#ef4444" *ngIf="editingId !== ap.id" (click)="promptDelete(ap.id)">Delete</button>
             <ng-container *ngIf="editingId === ap.id">
               <button class="btn-primary" (click)="saveEdit()">Save</button>
               <button class="btn-primary" style="background:#6b7280" (click)="cancelEdit()">Cancel</button>
@@ -91,6 +91,18 @@ import { AuthService } from './auth.service';
         </div>
       </article>
     </div>
+    
+    <!-- Styled confirmation dialog (in-app) -->
+    <div *ngIf="confirmingId !== null" class="confirm-backdrop" (click)="cancelDelete()">
+      <div class="confirm-dialog card" role="dialog" aria-modal="true" aria-labelledby="confirm-heading" (click)="$event.stopPropagation()">
+        <h3 id="confirm-heading">Confirm delete</h3>
+        <p>Are you sure you want to delete appointment #{{ confirmingId }}? This action cannot be undone.</p>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+          <button class="btn-secondary" (click)="cancelDelete()">Cancel</button>
+          <button class="btn-primary" style="background:#ef4444" (click)="confirmDelete()">Delete</button>
+        </div>
+      </div>
+    </div>
   </section>
   `
 })
@@ -108,6 +120,8 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   selectedAssetTypeId: number = 0;
   selectedServiceCenterId: number = 0;
   resizeHandler: any = null;
+  // id currently being confirmed for deletion (used to show a styled confirmation dialog)
+  confirmingId: number | null = null;
 
   private routerSub: Subscription | null = null;
 
@@ -288,8 +302,21 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteAppointment(id: number): void {
-    if (!confirm('Delete this appointment?')) return;
+  // show an in-app confirmation dialog instead of the native browser confirm()
+  promptDelete(id: number): void {
+    this.confirmingId = id;
+    try { this.cdr.detectChanges(); } catch {}
+  }
+
+  cancelDelete(): void {
+    this.confirmingId = null;
+    try { this.cdr.detectChanges(); } catch {}
+  }
+
+  confirmDelete(): void {
+    const id = this.confirmingId;
+    if (id == null) return;
+    this.confirmingId = null;
     this.fleet.deleteAppointment(id).subscribe({
       next: () => this.loadAppointments(),
       error: (err) => console.error('Failed to delete', err)
@@ -362,3 +389,4 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     return local.toISOString();
   }
 }
+
