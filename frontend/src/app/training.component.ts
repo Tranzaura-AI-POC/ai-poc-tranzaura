@@ -31,7 +31,6 @@ import { CommonModule } from '@angular/common';
         </div>
       </li>
     </ul>
-
     <h2>Visual Studio (recommended for backend/.NET)</h2>
     <ul>
       <li *ngFor="let v of vsResources" class="training-item">
@@ -50,6 +49,28 @@ import { CommonModule } from '@angular/common';
         <div class="training-meta">
           <a [href]="v.url" target="_blank" rel="noopener">{{ v.title }}</a>
           <p class="training-desc">{{ v.desc }}</p>
+        </div>
+      </li>
+    </ul>
+
+    <h2>Prompt engineering</h2>
+    <ul>
+      <li *ngFor="let p of promptResources" class="training-item">
+        <div class="training-thumb">
+          <svg width="64" height="36" viewBox="0 0 64 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="g3" x1="0" x2="1">
+                <stop offset="0" stop-color="#f0f7e6" />
+                <stop offset="1" stop-color="#eefbe8" />
+              </linearGradient>
+            </defs>
+            <rect width="64" height="36" rx="6" fill="url(#g3)" />
+            <polygon points="24,9 48,18 24,27" fill="#39cefa" />
+          </svg>
+        </div>
+        <div class="training-meta">
+          <a [href]="p.url" target="_blank" rel="noopener">{{ p.title }}</a>
+          <p class="training-desc">{{ p.desc }}</p>
         </div>
       </li>
     </ul>
@@ -102,6 +123,14 @@ export class TrainingComponent {
       title: 'Microsoft Learn: Copilot learning path',
       url: 'https://learn.microsoft.com/en-us/training/paths/copilot/',
       desc: 'A guided Microsoft Learn path with modules and hands-on exercises to learn Copilot concepts and workflows.'
+    }
+  ];
+
+  promptResources = [
+    {
+      title: 'Prompt engineering — GitHub Copilot',
+      url: 'https://docs.github.com/en/copilot/concepts/prompting/prompt-engineering',
+      desc: 'Best practices and guidance for writing prompts to get effective and safe suggestions from Copilot.'
     }
   ];
 
