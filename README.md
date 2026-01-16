@@ -105,11 +105,45 @@ How to switch to your SQL Server instance for dev/testing
 
 Testing
 
-- Use the frontend to create appointments via the homepage. The appointments page will list created appointments. You can also call the API directly:
+- Manual testing: use the frontend to create appointments via the homepage. The appointments page will list created appointments. You can also call the API directly:
 
 ```
 Invoke-RestMethod -Uri http://127.0.0.1:5000/api/ServiceAppointments
 ```
+
+- End-to-end tests (Playwright)
+
+	This project includes Playwright E2E tests under `frontend/tests`.
+
+	1) Provide credentials for tests
+
+		 - Copy `.env.example` to `.env` and set `FLEET_USERNAME` and `FLEET_PASSWORD` (do NOT commit `.env`).
+		 - Alternatively set environment variables in your shell or in CI (`FLEET_USERNAME`, `FLEET_PASSWORD`).
+
+	2) Run the tests locally (PowerShell example that avoids execution-policy issues):
+
+```powershell
+$env:FLEET_USERNAME='admin'; $env:FLEET_PASSWORD='Password123!'; Push-Location 'C:\dev\ai-poc-tranzaura\frontend'; cmd /c "npm run e2e:pdf"; Pop-Location
+```
+
+	- You can omit the inline env settings if you created a local `.env` and load it using your preferred dotenv loader, or set the vars in your CI environment.
+	- If PowerShell blocks running `npm` scripts on your machine, the `cmd /c` wrapper above avoids the `npm.ps1` execution policy issue.
+
+	3) CI / GitHub Actions
+
+		 - Add `FLEET_USERNAME` and `FLEET_PASSWORD` as repository secrets and expose them to the workflow step that runs Playwright. Example snippet:
+
+```yaml
+- name: Run Playwright tests
+	env:
+		FLEET_USERNAME: ${{ secrets.FLEET_USERNAME }}
+		FLEET_PASSWORD: ${{ secrets.FLEET_PASSWORD }}
+	run: npx playwright test
+```
+
+	Notes
+	- Tests are written to use the existing seeded admin user by default; they will not attempt to create new admin users.
+	- If your backend is running on a different host/port, set `FLEET_API_URL` or update the test helper functions accordingly.
 
 Contributing
 
