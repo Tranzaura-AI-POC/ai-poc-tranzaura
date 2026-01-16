@@ -25,3 +25,6 @@ frontend/.angular/
 frontend/test-results/
 frontend/playwright-run.log
 frontend/package-lock.json
+
+# Environment files (local secrets)
+.env
