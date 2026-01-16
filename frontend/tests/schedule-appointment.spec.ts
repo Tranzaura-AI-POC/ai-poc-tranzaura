@@ -25,7 +25,7 @@ async function login(page) {
   if (!token) throw new Error('Login failed: could not obtain token');
 }
 
-test('schedule an appointment from homepage and delete it', async ({ page }) => {
+test('schedule an appointment from homepage and save it', async ({ page }) => {
   await login(page);
 
   // Debug: log token and capture outgoing POST request headers for troubleshooting 403
