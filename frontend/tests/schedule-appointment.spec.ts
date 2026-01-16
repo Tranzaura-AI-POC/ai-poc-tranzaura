@@ -1,41 +1,28 @@
 import { test, expect } from '@playwright/test';
 
+// Use existing admin credentials from environment rather than creating new users
+const FLEET_USERNAME = process.env.FLEET_USERNAME;
+const FLEET_PASSWORD = process.env.FLEET_PASSWORD;
+if (!FLEET_USERNAME || !FLEET_PASSWORD) throw new Error('FLEET_USERNAME and FLEET_PASSWORD must be set in the environment');
+
 // Reuse API login to set localStorage token
 async function login(page) {
   await page.goto('/');
-  // create a unique username per test run to avoid conflicts and ensure role assignment
-  const unique = `e2e_admin_${Date.now()}`;
-  const password = 'Password123!';
+  const username = FLEET_USERNAME;
+  const password = FLEET_PASSWORD;
+  const token = await page.evaluate(async (creds) => {
+    const res = await fetch('/api/Auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: creds.username, password: creds.password })
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    localStorage.setItem('fleet_token', json.token);
+    return json.token;
+  }, { username, password });
 
-  const token = await page.evaluate(async (opts) => {
-    const u = opts.u;
-    const p = opts.p;
-    async function doLogin(username) {
-      const res = await fetch('/api/Auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password: p })
-      });
-      if (!res.ok) return null;
-      const json = await res.json();
-      return json.token;
-    }
-
-    // Always attempt to register first (use unique username)
-    try {
-      await fetch('/api/Auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: u, password: p, role: 'Admin' })
-      });
-    } catch { /* ignore */ }
-
-    const t = await doLogin(u);
-    if (t) localStorage.setItem('fleet_token', t);
-    return t;
-  }, { u: unique, p: password });
-
-  if (!token) throw new Error('Login failed: could not obtain token (register or login)');
+  if (!token) throw new Error('Login failed: could not obtain token');
 }
 
 test('schedule an appointment from homepage and delete it', async ({ page }) => {

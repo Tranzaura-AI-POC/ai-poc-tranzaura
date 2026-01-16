@@ -1,19 +1,26 @@
 import { test, expect } from '@playwright/test';
 
+// Use environment credentials to avoid exposing secrets in test code
+const FLEET_USERNAME = process.env.FLEET_USERNAME;
+const FLEET_PASSWORD = process.env.FLEET_PASSWORD;
+if (!FLEET_USERNAME || !FLEET_PASSWORD) throw new Error('FLEET_USERNAME and FLEET_PASSWORD must be set in the environment');
+
 // Perform API login and set token in localStorage to avoid UI flakiness
 async function login(page) {
   await page.goto('http://127.0.0.1:4200/');
-  const token = await page.evaluate(async () => {
+  const username = FLEET_USERNAME;
+  const password = FLEET_PASSWORD;
+  const token = await page.evaluate(async (creds) => {
     const res = await fetch('http://127.0.0.1:5000/api/Auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'admin', password: 'Password123!' })
+      body: JSON.stringify({ username: creds.username, password: creds.password })
     });
     if (!res.ok) return null;
     const json = await res.json();
     localStorage.setItem('fleet_token', json.token);
     return json.token;
-  });
+  }, { username, password });
   if (!token) throw new Error('Login failed: could not obtain token');
 }
 
