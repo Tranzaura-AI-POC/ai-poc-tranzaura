@@ -5,6 +5,7 @@ import { FleetService } from './fleet.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ChangeDetectorRef } from '@angular/core';
+import { AuthService } from './auth.service';
 
 @Component({
   selector: 'app-appointments',
@@ -64,10 +65,16 @@ import { ChangeDetectorRef } from '@angular/core';
           </div>
 
           <form *ngIf="editingId === ap.id" (ngSubmit)="saveEdit()" style="display:flex;flex-direction:column;gap:8px">
-            <label>
-              Appointment
-              <input type="datetime-local" [(ngModel)]="editModel.appointmentInput" name="appointment" class="date-input" />
-            </label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="flex:1">
+                Date
+                <input type="date" [(ngModel)]="editModel.appointmentDateInput" (change)="onDatePicked($event)" name="appointmentDate" class="date-input" />
+              </label>
+              <label style="width:220px">
+                Time
+                <input type="time" [(ngModel)]="editModel.appointmentTime" (change)="onTimePicked($event)" name="appointmentTime" class="date-input" />
+              </label>
+            </div>
             <label>
               Asset Make
               <input type="text" [(ngModel)]="editModel.assetMake" name="assetMake" class="select-input" />
@@ -91,6 +98,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   appointments: any[] = [];
   assetTypes: any[] = [];
   serviceCenters: any[] = [];
+  // time is stored as `editModel.appointmentTime` (HH:mm)
 
   editingId: number | null = null;
   editModel: any = {};
@@ -103,9 +111,10 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
 
   private routerSub: Subscription | null = null;
 
-  constructor(private fleet: FleetService, private router: Router, private cdr: ChangeDetectorRef) {}
+  constructor(private fleet: FleetService, private router: Router, private cdr: ChangeDetectorRef, private auth: AuthService) {}
 
   ngOnInit(): void {
+    // using native time input; no custom hour/minute arrays needed
     this.loadLookups();
     this.loadAppointments();
     // If route reuse or navigation returns to this component, reload appointments
@@ -123,6 +132,11 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     // attach resize handler to re-evaluate overflow when window size changes
     this.resizeHandler = this.evaluateOverflow.bind(this);
     window.addEventListener('resize', this.resizeHandler);
+  }
+
+  ngOnDestroy(): void {
+    if (this.routerSub) { this.routerSub.unsubscribe(); this.routerSub = null; }
+    if (this.resizeHandler) { window.removeEventListener('resize', this.resizeHandler); this.resizeHandler = null; }
   }
 
   onFilterChange(): void {
@@ -145,10 +159,7 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    if (this.routerSub) { this.routerSub.unsubscribe(); this.routerSub = null; }
-    if (this.resizeHandler) { window.removeEventListener('resize', this.resizeHandler); this.resizeHandler = null; }
-  }
+  
 
   loadLookups(): void {
     this.fleet.getAssetTypes().subscribe(a => { this.assetTypes = a || []; try { this.cdr.detectChanges(); } catch {} });
@@ -231,7 +242,16 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
   startEdit(ap: any): void {
     this.editingId = ap.id;
     this.editModel = { ...ap };
-    this.editModel.appointmentInput = this.toLocalDatetimeInput(ap.appointmentDate);
+    // split existing appointment date into separate date and time inputs
+    const dt = this.toLocalDatetimeInput(ap.appointmentDate);
+    if (dt) {
+      const parts = dt.split('T');
+      this.editModel.appointmentDateInput = parts[0] || '';
+      this.editModel.appointmentTime = (parts[1] || '').slice(0,5) || '00:00';
+    } else {
+      this.editModel.appointmentDateInput = '';
+      this.editModel.appointmentTime = '00:00';
+    }
   }
 
   cancelEdit(): void {
@@ -243,12 +263,19 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     if (!this.editModel) return;
     const payload = { ...this.editModel };
     // convert input back to ISO datetime
-    if (this.editModel.appointmentInput) {
-      const iso = this.fromLocalDatetimeInput(this.editModel.appointmentInput);
-      payload.appointmentDate = iso;
+    // If date/time inputs are present, combine them; fall back to existing appointmentInput
+    if (this.editModel.appointmentDateInput) {
+      const time = this.editModel.appointmentTime || '00:00';
+      const combined = this.combineLocalDateTime(this.editModel.appointmentDateInput, time);
+      payload.appointmentDate = combined;
+    } else if (this.editModel.appointmentInput) {
+      payload.appointmentDate = this.fromLocalDatetimeInput(this.editModel.appointmentInput);
     }
     // ensure id is present
     const id = payload.id;
+    // debug: log token and roles to help diagnose authorization issues
+    try { console.debug('Auth token:', this.auth.getToken()); console.debug('User roles:', this.auth.getUserRoles()); } catch (e) {}
+
     this.fleet.updateAppointment(id, payload).subscribe({
       next: () => {
         this.editingId = null;
@@ -303,5 +330,35 @@ export class AppointmentsComponent implements OnInit, OnDestroy {
     // treat input as local and produce ISO string
     const d = new Date(val);
     return d.toISOString();
+  }
+
+  // called when a date is picked from the native date-control; blur the control so the calendar closes
+  onDatePicked(evt: any): void {
+    try {
+      const el = evt && evt.target as HTMLElement;
+      if (el && typeof (el as any).blur === 'function') (el as any).blur();
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // called when a time is picked from the native time-control; blur so native picker closes
+  onTimePicked(evt: any): void {
+    try {
+      const el = evt && evt.target as HTMLElement;
+      if (el && typeof (el as any).blur === 'function') (el as any).blur();
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Combine local date (YYYY-MM-DD) and time (HH:mm) into an ISO datetime string
+  combineLocalDateTime(datePart: string, timePart: string): string {
+    // ensure fallback values
+    const date = datePart || '';
+    const time = timePart || '00:00';
+    // construct a local datetime and convert to ISO
+    const local = new Date(`${date}T${time}`);
+    return local.toISOString();
   }
 }

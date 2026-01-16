@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Azure.Identity;
+using System.Linq;
+using System.Security.Claims;
 using System;
 using System.IO;
 using Microsoft.AspNetCore.DataProtection;
@@ -71,10 +73,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                             ($"https://login.microsoftonline.com/{builder.Configuration["AzureAd:TenantId"]}");
             options.Authority = authority;
             options.Audience = azureClient;
-            options.TokenValidationParameters = new TokenValidationParameters
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    RoleClaimType = ClaimTypes.Role
+                };
+            // Ensure role claims from different claim types are available under ClaimTypes.Role
+            options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
             {
-                ValidateIssuer = true,
-                RoleClaimType = "roles"
+                OnTokenValidated = ctx =>
+                {
+                    var id = ctx.Principal?.Identity as ClaimsIdentity;
+                    if (id != null)
+                    {
+                        var roleClaims = ctx.Principal.Claims.Where(c => c.Type == "roles" || c.Type == "role" || c.Type == ClaimTypes.Role).ToList();
+                        foreach (var rc in roleClaims)
+                        {
+                            if (!id.HasClaim(ClaimTypes.Role, rc.Value))
+                            {
+                                id.AddClaim(new Claim(ClaimTypes.Role, rc.Value));
+                            }
+                        }
+                    }
+                    return System.Threading.Tasks.Task.CompletedTask;
+                }
             };
         }
         else
@@ -90,7 +112,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 ValidIssuer = issuer,
                 ValidAudience = audience,
                 IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(key)),
-                RoleClaimType = "roles"
+                RoleClaimType = ClaimTypes.Role
+            };
+            // Mirror role claims into ClaimTypes.Role for consistent role checks
+            options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+            {
+                OnTokenValidated = ctx =>
+                {
+                    var id = ctx.Principal?.Identity as ClaimsIdentity;
+                    if (id != null)
+                    {
+                        var roleClaims = ctx.Principal.Claims.Where(c => c.Type == "roles" || c.Type == "role" || c.Type == ClaimTypes.Role).ToList();
+                        foreach (var rc in roleClaims)
+                        {
+                            if (!id.HasClaim(ClaimTypes.Role, rc.Value))
+                            {
+                                id.AddClaim(new Claim(ClaimTypes.Role, rc.Value));
+                            }
+                        }
+                    }
+                    return System.Threading.Tasks.Task.CompletedTask;
+                }
             };
         }
     });
