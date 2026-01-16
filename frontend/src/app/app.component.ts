@@ -41,7 +41,7 @@ import { AdminOnlyDirective } from './admin-only.directive';
 
   <footer class="site-footer" role="contentinfo">
     <div class="site-footer-inner">
-      <p>© {{ year }} FleetHub — Built with care. <a class="nav-link" routerLink="/training">Training</a></p>
+      <p>© {{ year }} FleetHub — Built with care.</p>
     </div>
   </footer>
   `
