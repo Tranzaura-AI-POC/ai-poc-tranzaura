@@ -1,3 +1,31 @@
+# Ignore build outputs
+/bin/
+/obj/
+
+# Backend test build outputs
+backend/tests/**/bin/
+backend/tests/**/obj/
+
+# Temp test projects and artifacts
+tempXunitTest/
+
+# Playwright reports and test results
+frontend/Test Results/
+frontend/test-results/
+frontend/playwright-report/
+frontend/playwright-report/**
+
+# Test artifacts
+*.pdf
+frontend/test-failure-*.html
+frontend/test-failure-*.png
+test-results/
+
+# Node
+frontend/node_modules/
+
+# VS Code
+.vscode/
 # Visual Studio
 .vs/
 *.user
