@@ -139,29 +139,50 @@ test('schedule an appointment from homepage and save it', async ({ page }) => {
     };
 
     const post = await fetch('/api/ServiceAppointments', { method: 'POST', headers, body: JSON.stringify(payload) });
-    const txt = await post.text();
-    return { ok: post.ok, status: post.status, body: txt };
+    if (!post.ok) {
+      const txt = await post.text();
+      return { ok: false, status: post.status, body: txt };
+    }
+    const created = await post.json();
+    return { ok: true, status: post.status, body: created };
   }, { note: uniqueNote, dateStr, yearStr });
 
   if (!apiResult.ok) throw new Error(`Appointment API POST failed: ${apiResult.status} ${apiResult.body}`);
 
-  // Verify the created appointment exists in the list (no DELETE from test)
+  const created = apiResult.body as any;
+  const createdId = created && created.id;
+
+  // Verify the created appointment exists in the list
   const found = await page.evaluate(async (args) => {
-    const note = args.note;
+    const { note, createdId } = args;
     const token = localStorage.getItem('fleet_token');
     const headers: any = { 'Content-Type': 'application/json' };
     if (token) headers.Authorization = `Bearer ${token}`;
     const res = await fetch('/api/ServiceAppointments', { headers });
     if (!res.ok) return { found: false, list: `failed-to-list:${res.status}` };
     const list = await res.json();
-    const match = (list || []).find((a: any) => a.notes === note || (a.notes || '').includes(note));
+    const match = (list || []).find((a: any) => (createdId && Number(a.id) === Number(createdId)) || a.notes === note || (a.notes || '').includes(note));
     return { found: !!match, list };
-  }, { note: uniqueNote });
+  }, { note: uniqueNote, createdId });
 
   if (!found.found) {
-    console.log('Appointment POST response:', apiResult.status, apiResult.body);
+    console.log('Appointment POST response:', apiResult.status, JSON.stringify(apiResult.body));
     console.log('ServiceAppointments list:', JSON.stringify(found.list, null, 2));
   }
 
   expect(found.found).toBeTruthy();
+
+  // Cleanup: delete the created appointment
+  if (createdId) {
+    try {
+      await page.evaluate(async (id) => {
+        const token = localStorage.getItem('fleet_token');
+        const headers: any = { 'Content-Type': 'application/json' };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        await fetch(`/api/ServiceAppointments/${id}`, { method: 'DELETE', headers });
+      }, createdId);
+    } catch (e) {
+      console.warn('Failed to cleanup created appointment', e);
+    }
+  }
 });

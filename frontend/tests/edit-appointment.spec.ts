@@ -43,8 +43,43 @@ test('edit appointment updates backend and UI', async ({ page, request }) => {
   if (hour === 18) minute = 0;
   const timeToSet = `${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')}`;
 
+  // track created appointment for cleanup
+  let createdId: any = null;
+  let token: any = null;
+
   try {
     await apiLogin(page);
+
+    // Obtain an API token for direct API operations
+    const loginRes = await request.post('http://127.0.0.1:5000/api/Auth/login', { data: { username: FLEET_USERNAME, password: FLEET_PASSWORD } });
+    expect(loginRes.ok()).toBeTruthy();
+    const loginJson = await loginRes.json();
+    token = loginJson.token;
+
+    // Fetch lookups to seed a new appointment
+    const atRes = await request.get('http://127.0.0.1:5000/api/AssetTypes', { headers: { Authorization: `Bearer ${token}` } });
+    const scRes = await request.get('http://127.0.0.1:5000/api/ServiceCenters', { headers: { Authorization: `Bearer ${token}` } });
+    const ats = (await atRes.json()) || [];
+    const scs = (await scRes.json()) || [];
+    const assetTypeId = (ats && ats.length > 0) ? ats[0].id : 1;
+    const serviceCenterId = (scs && scs.length > 0) ? scs[0].id : 1;
+
+    // create an appointment specifically for this test to avoid cross-test interference
+    const iso = new Date(dateToSet + 'T' + timeToSet + ':00').toISOString();
+    const createRes = await request.post('http://127.0.0.1:5000/api/ServiceAppointments', {
+      data: {
+        assetTypeId,
+        serviceCenterId,
+        appointmentDate: iso,
+        assetYear: 2020,
+        assetMake: 'E2E-Test',
+        notes: 'created for edit-appointment test'
+      },
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    expect(createRes.ok()).toBeTruthy();
+    const created = await createRes.json();
+    createdId = created.id;
 
     await page.goto('http://127.0.0.1:4200/appointments');
     await page.waitForLoadState('networkidle');
@@ -82,30 +117,33 @@ test('edit appointment updates backend and UI', async ({ page, request }) => {
     await page.waitForTimeout(500);
 
     // Verify via API that an appointment exists with the requested local date/time
-    const loginRes = await request.post('http://127.0.0.1:5000/api/Auth/login', { data: { username: FLEET_USERNAME, password: FLEET_PASSWORD } });
-    expect(loginRes.ok()).toBeTruthy();
-    const loginJson = await loginRes.json();
-    const token = loginJson.token;
-    const apires = await request.get('http://127.0.0.1:5000/api/ServiceAppointments', { headers: { Authorization: `Bearer ${token}` } });
-    expect(apires.ok()).toBeTruthy();
-    const apis = await apires.json();
+    // Poll API until the created appointment appears (some tests run concurrently)
+    let apis: any[] = [];
+    let target: any = null;
+    const maxAttempts = 10;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const apires = await request.get('http://127.0.0.1:5000/api/ServiceAppointments', { headers: { Authorization: `Bearer ${token}` } });
+      expect(apires.ok()).toBeTruthy();
+      apis = await apires.json();
+      target = apis.find((a: any) => Number(a.id) === Number(createdId));
+      if (target) break;
+      await page.waitForTimeout(300);
+    }
+    expect(target, `Appointment ${createdId} not found in API`).toBeTruthy();
 
-    const found = apis.find((a: any) => {
-      try {
-        const d = new Date(a.appointmentDate);
-        const y = String(d.getFullYear()).padStart(4, '0');
-        const mo = String(d.getMonth() + 1).padStart(2, '0');
-        const da = String(d.getDate()).padStart(2, '0');
-        const hh = String(d.getHours()).padStart(2, '0');
-        const mm = String(d.getMinutes()).padStart(2, '0');
-        const apiDate = `${y}-${mo}-${da}`;
-        const apiTime = `${hh}:${mm}`;
-        return apiDate === dateToSet && apiTime === timeToSet;
-      } catch (e) {
-        return false;
-      }
-    });
-    expect(found, 'Updated appointment not found in API').toBeTruthy();
+    const d = new Date(target.appointmentDate);
+    const toParts = (dt: Date, useUTC = false) => {
+      const y = String(useUTC ? dt.getUTCFullYear() : dt.getFullYear()).padStart(4, '0');
+      const mo = String((useUTC ? dt.getUTCMonth() : dt.getMonth()) + 1).padStart(2, '0');
+      const da = String(useUTC ? dt.getUTCDate() : dt.getDate()).padStart(2, '0');
+      const hh = String(useUTC ? dt.getUTCHours() : dt.getHours()).padStart(2, '0');
+      const mm = String(useUTC ? dt.getUTCMinutes() : dt.getMinutes()).padStart(2, '0');
+      return { date: `${y}-${mo}-${da}`, time: `${hh}:${mm}` };
+    };
+
+    const local = toParts(d, false);
+    const utc = toParts(d, true);
+    expect((local.date === dateToSet && local.time === timeToSet) || (utc.date === dateToSet && utc.time === timeToSet), 'Updated appointment not found in API').toBeTruthy();
 
     // Verify UI reflects updated date (rough check: meta contains the entered day)
     const firstMeta = page.locator('.appointment-card').first().locator('.meta');
@@ -117,5 +155,14 @@ test('edit appointment updates backend and UI', async ({ page, request }) => {
     try { await page.screenshot({ path: 'test-failure-edit-appointment.png', fullPage: true }); } catch {}
     try { const html = await page.content(); require('fs').writeFileSync('test-failure-edit-appointment.html', html); } catch {}
     throw err;
+  } finally {
+    // cleanup the appointment we created for this test
+    try {
+      if (createdId && token) {
+        await request.delete(`http://127.0.0.1:5000/api/ServiceAppointments/${createdId}`, { headers: { Authorization: `Bearer ${token}` } });
+      }
+    } catch (e) {
+      // ignore cleanup failures
+    }
   }
 });
