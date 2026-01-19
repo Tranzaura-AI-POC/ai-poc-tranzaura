@@ -1,0 +1,14 @@
+## CODEOWNERS for Tranzaura-AI-POC/ai-poc-tranzaura
+#
+# Update the owner entries below to match your GitHub org teams or user handles.
+# Examples: `@Tranzaura-AI-POC/owners`, `@Tranzaura-AI-POC/frontend`, or individual `@username`.
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for all files (replace with an org/team or individual handles)
+*    @Tranzaura-AI-POC/owners
+
+# Frontend maintainers
+/frontend/    @Tranzaura-AI-POC/frontend
+
+# Backend maintainers
+/backend/     @Tranzaura-AI-POC/backend
