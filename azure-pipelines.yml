@@ -23,6 +23,11 @@ variables:
     value: 'ai-poc-tranzaura'
   - name: buildConfiguration
     value: 'Release'
+  # Control which stages run. For initial dev-only deployments keep these false.
+  - name: deployUat
+    value: 'false'
+  - name: deployProd
+    value: 'false'
 
 stages:
 - stage: Build
@@ -69,7 +74,7 @@ stages:
     - publish: frontend/dist
       artifact: frontend-dist
 
-- stage: Deploy_Dev
+ - stage: Deploy_Dev
   displayName: Deploy to Dev
   dependsOn: Build
   jobs:
@@ -115,6 +120,7 @@ stages:
 - stage: Deploy_UAT
   displayName: Deploy to UAT
   dependsOn: Deploy_Dev
+  condition: and(succeeded(), eq(variables['deployUat'], 'true'))
   jobs:
   - deployment: DeployBackendUAT
     displayName: Deploy backend to App Service (uat)
@@ -176,6 +182,7 @@ stages:
 - stage: Deploy_Prod
   displayName: Deploy to Production
   dependsOn: Deploy_UAT
+  condition: and(succeeded(), eq(variables['deployProd'], 'true'))
   jobs:
   - job: ManualApproval
     displayName: 'Manual approval (Gate)'

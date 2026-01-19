@@ -47,6 +47,12 @@ This document captures the prioritized steps to move `ai-poc-tranzaura` to your 
 - [ ] Provision infrastructure (IaC)
   - Author Bicep or Terraform templates to create: Resource Group, Azure SQL Server + Database (or Managed Instance), App Service / Container Apps / ACR, Key Vault, Storage Account (for DataProtection keys), Application Insights, and optional VNet/subnet.
   - Keep all templates parameterized for `env` (staging/prod).
+  - For a minimal-cost dev environment, create a separate resource group and provision:
+    - Small App Service Plan (B1) and a single Web App for the backend.
+    - A Storage Account with static website enabled for the frontend (Standard_LRS).
+    - A minimal Azure SQL instance (or use Azure SQL Edge / Basic tier) or use the existing SQLite fallback for dev to avoid DB costs.
+    - A Storage container for DataProtection keys (or use filesystem for true low-cost dev).
+  - See `infra/dev-infra.bicep` for a minimal example to provision App Service + Storage for Dev.
 
 - [ ] Secure secrets with Key Vault and Managed Identity
   - Enable system-assigned Managed Identity on App Service / Container instance.
@@ -100,6 +106,7 @@ This document captures the prioritized steps to move `ai-poc-tranzaura` to your 
 
 - [ ] Cost, sizing and testing
   - Estimate costs and choose SKUs for App Service/VM/AKS, SQL, and other resources.
+  - For dev, prefer the smallest SKU and scoped resource groups. Consider using the SQLite fallback to avoid DB costs during early testing.
   - Run performance and load tests in a staging environment.
   - Validate autoscale settings and failover.
 
@@ -138,3 +145,23 @@ This document captures the prioritized steps to move `ai-poc-tranzaura` to your 
 ---
 
 If you want, I can now scaffold an Azure Pipelines YAML to build and deploy this app (staging and production), or draft GitHub Actions instead. Which CI system should I target?
+
+---
+
+### Recommended next steps to get Dev ready in Azure DevOps `Tranzaura-AI-POC` project
+
+1. Create an Azure service connection (service principal) in the Azure DevOps project with Contributor rights limited to the Dev resource group.
+2. Create a variable group or pipeline variables for: `azureSubscription` (service connection name), `resourceGroup`, `backendAppName`, `frontendStorageAccount`, and set `deployUat=false` and `deployProd=false` in the pipeline variables for initial runs.
+3. Deploy minimal infra using Bicep from the repo (example):
+
+```powershell
+az group create -n ai-poc-dev-rg -l eastus
+az deployment group create -g ai-poc-dev-rg --template-file infra/dev-infra.bicep --parameters storageAccountName=<unique> webAppName=<name> appServicePlanName=<name>
+```
+
+4. Configure Key Vault and secrets if you plan to use Azure SQL or production-like settings; otherwise use SQLite for dev by leaving `FLEET_CONNECTION_STRING` empty.
+5. Configure the Azure Pipelines pipeline variables (or use a variable group linked to Key Vault) and run the pipeline — it will build and deploy to Dev only by default.
+
+If you'd like, I can:
+- Create a pipeline variable group and a minimal pipeline YAML variant that only includes the Build + Deploy_Dev stages and uses the `az deployment` Bicep step to provision infra automatically.
+- Or scaffold a GitHub Actions workflow instead. Tell me which you prefer and I will implement it.
