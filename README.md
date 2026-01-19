@@ -167,6 +167,40 @@ License
 
 # ai-poc-tranzaura
 
+## Local HTTPS / FORCE_HTTPS
+
+- Purpose: enable HTTPS redirection and HSTS in non-production to replicate production TLS behaviour locally for testing and E2E parity.
+- How it works: the backend reads `ForceHttps` configuration or the environment variable `FORCE_HTTPS`. When set to `true`, the app applies HSTS and `UseHttpsRedirection()` even when `ASPNETCORE_ENVIRONMENT` is not `Production`.
+
+Examples (PowerShell):
+
+1) Trust the .NET developer certificate (required once):
+
+```powershell
+dotnet dev-certs https --trust
+```
+
+2) Run the backend with `FORCE_HTTPS` enabled:
+
+```powershell
+$env:FORCE_HTTPS = 'true'
+Push-Location backend
+dotnet run
+Pop-Location
+```
+
+3) Optionally ensure ASP.NET Core binds HTTPS on the expected port (default `5001`):
+
+```powershell
+$env:ASPNETCORE_URLS = 'https://localhost:5001;http://localhost:5000'
+dotnet run --project backend
+```
+
+Notes:
+- Use `FORCE_HTTPS` locally only when you have a trusted dev certificate installed (see step 1). For CI or shared runners, prefer issuing real certificates or running tests against a test environment that already exposes HTTPS.
+- `FORCE_HTTPS` is intended for local parity and debugging; do not skip certificate validation in tests or production.
+- If you run Playwright or other E2E tests against HTTPS, ensure tests point to the `https://` API URL or set any test-specific `FLEET_API_URL`/environment variables your test harness supports.
+
 ## DataProtection keys (Azure Blob Storage)
 
 For multi-instance deployments you should persist ASP.NET Core DataProtection keys to a central store. This project supports persisting keys to Azure Blob Storage when configured; otherwise it falls back to a local filesystem path.

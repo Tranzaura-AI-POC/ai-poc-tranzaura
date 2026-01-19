@@ -258,6 +258,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Allow forcing HTTPS/HSTS in non-production for local parity via env var `FORCE_HTTPS` or config `ForceHttps`.
+var forceHttpsEnv = builder.Configuration["ForceHttps"] ?? Environment.GetEnvironmentVariable("FORCE_HTTPS");
+var forceHttps = !string.IsNullOrEmpty(forceHttpsEnv) && bool.TryParse(forceHttpsEnv, out var _forceHttps) && _forceHttps;
+
 // Ensure the database schema is created/migrated and seed data is applied.
 // Only perform automatic migrations/seeding in development or CI. Avoid
 // applying schema changes automatically in production unless explicitly
@@ -283,29 +287,33 @@ if (app.Environment.IsDevelopment() || isCi || applyMigrations)
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<FleetManagement.Middlewares.SecurityHeadersMiddleware>();
 
-if (app.Environment.IsProduction())
+// Enforce HSTS and HTTPS either in production or when forced via `FORCE_HTTPS`.
+if (app.Environment.IsProduction() || forceHttps)
 {
-    // Prefer an explicit FRONTEND_ORIGIN in production for strict CORS.
+    app.UseHsts();
+    app.UseHttpsRedirection();
+
     var prodOrigin = builder.Configuration["FrontendOrigin"] ?? Environment.GetEnvironmentVariable("FRONTEND_ORIGIN");
-    if (string.IsNullOrEmpty(prodOrigin))
+    if (app.Environment.IsProduction() && string.IsNullOrEmpty(prodOrigin))
     {
-        // Fall back to local development origins for ease of local testing,
-        // but log a warning so operators are aware this is not strictly locked down.
         var logger = app.Services.GetRequiredService<ILogger<Program>>();
         logger.LogWarning("FRONTEND_ORIGIN not set in production; falling back to LocalDev CORS for local testing.");
         app.UseCors("LocalDev");
     }
     else
     {
-        // Enforce HSTS and HTTPS in production when a production origin is configured.
-        app.UseHsts();
-        app.UseHttpsRedirection();
         app.UseCors("Production");
+    }
+
+    if (!app.Environment.IsProduction() && forceHttps)
+    {
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("FORCE_HTTPS enabled in non-production; HSTS and HTTPS redirection applied.");
     }
 }
 else
 {
-    // Enable local development CORS and developer tools when not in production.
+    // Enable local development CORS and developer tools when not enforcing HTTPS.
     app.UseCors("LocalDev");
     if (app.Environment.IsDevelopment())
     {

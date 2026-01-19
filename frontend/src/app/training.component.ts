@@ -75,6 +75,28 @@ import { CommonModule } from '@angular/common';
       </li>
     </ul>
 
+    <h2>Playwright Test (VS Code)</h2>
+    <ul>
+      <li class="training-item">
+        <div class="training-thumb">
+          <svg width="64" height="36" viewBox="0 0 64 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="g4" x1="0" x2="1">
+                <stop offset="0" stop-color="#f3f8ff" />
+                <stop offset="1" stop-color="#eaf6ff" />
+              </linearGradient>
+            </defs>
+            <rect width="64" height="36" rx="6" fill="url(#g4)" />
+            <polygon points="24,9 48,18 24,27" fill="#3ea6ff" />
+          </svg>
+        </div>
+        <div class="training-meta">
+          <a href="https://playwright.dev/docs/getting-started-vscode" target="_blank" rel="noopener">Playwright Test — Getting started in VS Code</a>
+          <p class="training-desc">Official Playwright guide for using Playwright Test from within Visual Studio Code.</p>
+        </div>
+      </li>
+    </ul>
+
     <h2>Guidance</h2>
     <ul>
       <li>Always review suggestions from Copilot — do not accept code without understanding it.</li>
