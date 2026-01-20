@@ -12,7 +12,7 @@ variables:
   - name: azureSubscription        # Azure service connection name (set in pipeline or variable group)
     value: 'Tranzaura-AI-POC-Azure'
   - name: resourceGroup
-    value: 'ai-poc-dev-rg'
+    value: ''
   - name: backendAppName
     value: ''
   - name: frontendStorageAccount
@@ -135,34 +135,6 @@ stages:
 
           - download: current
             artifact: backend-drop
-          - task: AzureCLI@2
-            displayName: 'Run DB migrations (optional)'
-            inputs:
-              azureSubscription: 'Tranzaura-AI-POC-Azure'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                echo "Run EF Core migrations from pipeline if configured"
-                # Expect a secret pipeline variable named FLEET_CONNECTION_STRING to be set (recommended)
-                if [ -z "${FLEET_CONNECTION_STRING:-}" ]; then
-                  echo "FLEET_CONNECTION_STRING not set; skipping migrations. To run migrations set pipeline secret 'FLEET_CONNECTION_STRING'."
-                  exit 0
-                fi
-
-                set -euo pipefail
-                echo "Installing dotnet-ef tool..."
-                dotnet --version || true
-                export DOTNET_CLI_TELEMETRY_OPTOUT=1
-                dotnet tool install --global dotnet-ef --version 8.* || true
-                export PATH="$HOME/.dotnet/tools:$PATH"
-
-                echo "Running migrations against Azure SQL using provided connection string"
-                # Run from repo root and target the backend project
-                dotnet ef database update \
-                  --project backend/FleetManagement.csproj \
-                  --startup-project backend \
-                  --configuration $(buildConfiguration) \
-                  --connection "${FLEET_CONNECTION_STRING}"
           - task: AzureWebApp@1
             displayName: 'Deploy backend to App Service (ZIP deploy)'
             inputs:
@@ -211,6 +183,8 @@ stages:
             displayName: 'Deploy backend to App Service (UAT)'
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
+              appName: '$(backendAppName)-uat'
+              package: '$(Pipeline.Workspace)/backend-drop')'
               appName: '$(backendAppName)-uat'
               package: '$(Pipeline.Workspace)/backend-drop'
 
@@ -279,6 +253,12 @@ stages:
           steps:
           - download: current
             artifact: backend-drop
+          - task: AzureWebApp@1
+            displayName: 'Deploy backend to App Service (Prod)'
+            inputs:
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
+              appName: '$(backendAppName)'
+              package: '$(Pipeline.Workspace)/backend-drop'
           - task: AzureCLI@2
             displayName: 'Run DB migrations (optional)'
             inputs:
@@ -287,32 +267,7 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 echo "Run EF Core migrations from pipeline if configured"
-                # Expect a secret pipeline variable named FLEET_CONNECTION_STRING to be set (recommended)
-                if [ -z "${FLEET_CONNECTION_STRING:-}" ]; then
-                  echo "FLEET_CONNECTION_STRING not set; skipping migrations. To run migrations set pipeline secret 'FLEET_CONNECTION_STRING'."
-                  exit 0
-                fi
-
-                set -euo pipefail
-                echo "Installing dotnet-ef tool..."
-                dotnet --version || true
-                export DOTNET_CLI_TELEMETRY_OPTOUT=1
-                dotnet tool install --global dotnet-ef --version 8.* || true
-                export PATH="$HOME/.dotnet/tools:$PATH"
-
-                echo "Running migrations against Azure SQL using provided connection string"
-                # Run from repo root and target the backend project
-                dotnet ef database update \
-                  --project backend/FleetManagement.csproj \
-                  --startup-project backend \
-                  --configuration $(buildConfiguration) \
-                  --connection "${FLEET_CONNECTION_STRING}"
-          - task: AzureWebApp@1
-            displayName: 'Deploy backend to App Service (Prod)'
-            inputs:
-              azureSubscription: 'Tranzaura-AI-POC-Azure'
-              appName: '$(backendAppName)'
-              package: '$(Pipeline.Workspace)/backend-drop'
+                # Example: dotnet ef database update --project backend --configuration $(buildConfiguration)
 
   - deployment: DeployFrontendProd
     displayName: Deploy frontend to Static Website (prod)
