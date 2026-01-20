@@ -28,6 +28,17 @@ variables:
     value: 'false'
   - name: deployProd
     value: 'false'
+  # Dev infra provisioning (set to 'true' to run Bicep deploy step)
+  - name: provisionInfra
+    value: 'false'
+  - name: location
+    value: 'uksouth'
+  - name: storageAccountName
+    value: 'tranzauraaipocdevsa'
+  - name: webAppName
+    value: 'ai-poc-backend-dev'
+  - name: appServicePlanName
+    value: 'ai-poc-plan-dev'
 
 stages:
 - stage: Build
@@ -74,7 +85,7 @@ stages:
     - publish: frontend/dist
       artifact: frontend-dist
 
- - stage: Deploy_Dev
+- stage: Deploy_Dev
   displayName: Deploy to Dev
   dependsOn: Build
   jobs:
@@ -87,6 +98,25 @@ stages:
       runOnce:
         deploy:
           steps:
+          - task: AzureCLI@2
+            displayName: 'Provision Dev infra (Bicep)'
+            inputs:
+              azureSubscription: 'b1caa968-7901-4985-a12b-d531ad77524d'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "Creating resource group ai-poc-dev-rg in UK South"
+                az group create -n ai-poc-dev-rg -l uksouth
+
+                echo "Deploying dev-infra.bicep"
+                az deployment group create
+                  --resource-group ai-poc-dev-rg
+                  --template-file infra/dev-infra.bicep
+                  --parameters
+                    storageAccountName=tranzauraaipocdevsa
+                    webAppName=ai-poc-backend-dev
+                    appServicePlanName=ai-poc-plan-dev
+
           - download: current
             artifact: backend-drop
           - task: AzureWebApp@1
