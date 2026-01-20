@@ -116,14 +116,14 @@ stages:
             displayName: 'Provision Dev infra (Bicep)'
             condition: and(succeeded(), eq(variables['provisionInfra'], 'true'))
             inputs:
-              azureSubscription: '$(azureSubscription)'
-              scriptType: bash
-              scriptLocation: inlineScript
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
               inlineScript: |
                 set -euo pipefail
                 echo "Creating resource group $(resourceGroup) in $(location)"
                 az group create -n $(resourceGroup) -l $(location)
-
+                
                 echo "Deploying infra/dev-infra.bicep"
                 az deployment group create \
                   --resource-group $(resourceGroup) \
