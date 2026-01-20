@@ -44,6 +44,20 @@ stages:
 - stage: Build
   displayName: Build and Test
   jobs:
+  - job: ValidateRun
+    displayName: 'Validate pipeline run variables (ensure only Dev)'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        echo "deployUat=$(deployUat)"
+        echo "deployProd=$(deployProd)"
+        if [ "$(deployUat)" = "true" ] || [ "$(deployProd)" = "true" ]; then
+          echo "ERROR: deployUat or deployProd are true. Aborting to avoid non-Dev deployments."
+          exit 1
+        fi
+      displayName: 'Ensure only Dev will be deployed'
+
   - job: BuildBackend
     displayName: Build .NET backend
     pool:
