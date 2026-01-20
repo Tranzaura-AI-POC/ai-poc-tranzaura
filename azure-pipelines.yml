@@ -34,7 +34,7 @@ variables:
   - name: location
     value: 'uksouth'
   - name: storageAccountName
-    value: 'tranzauraaipocdevsa'
+    value: 'ai-poc-storage-dev'
   - name: webAppName
     value: 'ai-poc-backend-dev'
   - name: appServicePlanName
