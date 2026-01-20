@@ -184,8 +184,6 @@ stages:
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               appName: '$(backendAppName)-uat'
-              package: '$(Pipeline.Workspace)/backend-drop')'
-              appName: '$(backendAppName)-uat'
               package: '$(Pipeline.Workspace)/backend-drop'
 
   - deployment: DeployFrontendUAT
