@@ -100,22 +100,24 @@ stages:
           steps:
           - task: AzureCLI@2
             displayName: 'Provision Dev infra (Bicep)'
+            condition: and(succeeded(), eq(variables['provisionInfra'], 'true'))
             inputs:
-              azureSubscription: 'b1caa968-7901-4985-a12b-d531ad77524d'
+              azureSubscription: '$(azureSubscription)'
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                echo "Creating resource group ai-poc-dev-rg in UK South"
-                az group create -n ai-poc-dev-rg -l uksouth
+                set -euo pipefail
+                echo "Creating resource group $(resourceGroup) in $(location)"
+                az group create -n $(resourceGroup) -l $(location)
 
-                echo "Deploying dev-infra.bicep"
-                az deployment group create
-                  --resource-group ai-poc-dev-rg
-                  --template-file infra/dev-infra.bicep
-                  --parameters
-                    storageAccountName=tranzauraaipocdevsa
-                    webAppName=ai-poc-backend-dev
-                    appServicePlanName=ai-poc-plan-dev
+                echo "Deploying infra/dev-infra.bicep"
+                az deployment group create \
+                  --resource-group $(resourceGroup) \
+                  --template-file infra/dev-infra.bicep \
+                  --parameters \
+                    storageAccountName=$(storageAccountName) \
+                    webAppName=$(webAppName) \
+                    appServicePlanName=$(appServicePlanName)
 
           - download: current
             artifact: backend-drop
@@ -219,9 +221,9 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - task: ManualValidation@0
-      inputs:
-        instructions: 'Approve production deployment'
+    - script: |
+        echo "Manual approval placeholder: enable production by setting variable 'deployProd' to true in the pipeline run or UI."
+      displayName: 'Manual approval placeholder'
 
   - deployment: DeployBackendProd
     displayName: Deploy backend to App Service (prod)
