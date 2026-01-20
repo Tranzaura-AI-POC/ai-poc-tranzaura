@@ -10,7 +10,7 @@ trigger:
 
 variables:
   - name: azureSubscription        # Azure service connection name (set in pipeline or variable group)
-    value: ''
+    value: 'Tranzaura-AI-POC-Azure'
   - name: resourceGroup
     value: ''
   - name: backendAppName
@@ -138,7 +138,7 @@ stages:
           - task: AzureWebApp@1
             displayName: 'Deploy backend to App Service (ZIP deploy)'
             inputs:
-              azureSubscription: '$(azureSubscription)'
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
               appName: '$(backendAppName)-dev'
               package: '$(Pipeline.Workspace)/backend-drop'
 
@@ -156,7 +156,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Upload frontend to Storage Account static website (dev)'
             inputs:
-              azureSubscription: '$(azureSubscription)'
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -182,7 +182,9 @@ stages:
           - task: AzureWebApp@1
             displayName: 'Deploy backend to App Service (UAT)'
             inputs:
-              azureSubscription: '$(azureSubscription)'
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
+              appName: '$(backendAppName)-uat'
+              package: '$(Pipeline.Workspace)/backend-drop')'
               appName: '$(backendAppName)-uat'
               package: '$(Pipeline.Workspace)/backend-drop'
 
@@ -200,7 +202,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Upload frontend to Storage Account static website (uat)'
             inputs:
-              azureSubscription: '$(azureSubscription)'
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -254,13 +256,13 @@ stages:
           - task: AzureWebApp@1
             displayName: 'Deploy backend to App Service (Prod)'
             inputs:
-              azureSubscription: '$(azureSubscription)'
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
               appName: '$(backendAppName)'
               package: '$(Pipeline.Workspace)/backend-drop'
           - task: AzureCLI@2
             displayName: 'Run DB migrations (optional)'
             inputs:
-              azureSubscription: '$(azureSubscription)'
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -282,7 +284,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Upload frontend to Storage Account static website (prod)'
             inputs:
-              azureSubscription: '$(azureSubscription)'
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
