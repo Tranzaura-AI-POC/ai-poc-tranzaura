@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": { "value": "ai-poc-storage-prod" },
+    "webAppName": { "value": "ai-poc-backend-prod" },
+    "appServicePlanName": { "value": "ai-poc-plan-prod" },
+    "environment": { "value": "Prod" },
+    "project": { "value": "ai-poc-tranzaura" },
+    "owner": { "value": "team-name" }
+  }
+}

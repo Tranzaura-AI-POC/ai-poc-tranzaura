@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": { "value": "ai-poc-storage-uat" },
+    "webAppName": { "value": "ai-poc-backend-uat" },
+    "appServicePlanName": { "value": "ai-poc-plan-uat" },
+    "environment": { "value": "UAT" },
+    "project": { "value": "ai-poc-tranzaura" },
+    "owner": { "value": "team-name" }
+  }
+}

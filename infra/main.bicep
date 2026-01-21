@@ -1,4 +1,3 @@
-// DEPRECATED: use infra/main.bicep (parameterized template)
 @description('Location for resources')
 param location string = resourceGroup().location
 

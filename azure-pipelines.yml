@@ -11,12 +11,28 @@ trigger:
 variables:
   - name: azureSubscription        # Azure service connection name (set in pipeline or variable group)
     value: 'Tranzaura-AI-POC-Azure'
-  - name: resourceGroup
+  - name: resourceGroupDev
     value: 'ai-poc-dev-rg'
-  - name: backendAppName
-    value: ''
-  - name: frontendStorageAccount
-    value: ''
+  - name: resourceGroupUat
+    value: 'ai-poc-uat-rg'
+  - name: resourceGroupProd
+    value: 'ai-poc-prod-rg'
+  - name: project
+    value: 'ai-poc-tranzaura'
+  - name: infraOwner
+    value: 'team-name'
+  - name: backendAppNameDev
+    value: 'ai-poc-backend-dev'
+  - name: backendAppNameUat
+    value: 'ai-poc-backend-uat'
+  - name: backendAppNameProd
+    value: 'ai-poc-backend-prod'
+  - name: frontendStorageAccountDev
+    value: 'ai-poc-frontend-storage-dev'
+  - name: frontendStorageAccountUat
+    value: 'ai-poc-frontend-storage-uat'
+  - name: frontendStorageAccountProd
+    value: 'ai-poc-frontend-storage-prod'
   - name: acrName
     value: ''
   - name: imageName
@@ -33,12 +49,24 @@ variables:
     value: 'false'
   - name: location
     value: 'uksouth'
-  - name: storageAccountName
+  - name: storageAccountNameDev
     value: 'ai-poc-storage-dev'
-  - name: webAppName
+  - name: storageAccountNameUat
+    value: 'ai-poc-storage-uat'
+  - name: storageAccountNameProd
+    value: 'ai-poc-storage-prod'
+  - name: webAppNameDev
     value: 'ai-poc-backend-dev'
-  - name: appServicePlanName
+  - name: webAppNameUat
+    value: 'ai-poc-backend-uat'
+  - name: webAppNameProd
+    value: 'ai-poc-backend-prod'
+  - name: appServicePlanNameDev
     value: 'ai-poc-plan-dev'
+  - name: appServicePlanNameUat
+    value: 'ai-poc-plan-uat'
+  - name: appServicePlanNameProd
+    value: 'ai-poc-plan-prod'
 
 stages:
 - stage: Build
@@ -57,6 +85,20 @@ stages:
           exit 1
         fi
       displayName: 'Ensure only Dev will be deployed'
+
+  - job: LintYAML
+    displayName: 'Lint pipeline YAML'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+    - script: |
+        python -m pip install --upgrade pip
+        pip install yamllint
+        yamllint azure-pipelines.yml
+      displayName: 'Run yamllint (fails on issues)'
 
   - job: BuildBackend
     displayName: Build .NET backend
@@ -121,17 +163,24 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 set -euo pipefail
-                echo "Creating resource group $(resourceGroup) in $(location)"
-                az group create -n $(resourceGroup) -l $(location)
-                
-                echo "Deploying infra/dev-infra.bicep"
+                echo "Creating resource group $(resourceGroupDev) in $(location)"
+                az group create -n $(resourceGroupDev) -l $(location)
+
+                echo "Deploying infra/main.bicep using infra/dev.parameters.json"
+                echo "What-If: infra/main.bicep (Dev)"
+                az deployment group what-if \
+                  --resource-group $(resourceGroupDev) \
+                  --template-file infra/main.bicep \
+                  --parameters @infra/dev.parameters.json \
+                  --output json > $(Pipeline.Workspace)/whatif-dev.json || true
+
+                echo "what-if saved to $(Pipeline.Workspace)/whatif-dev.json (no blocking in Dev)"
+
+                echo "Deploying infra/main.bicep using infra/dev.parameters.json"
                 az deployment group create \
-                  --resource-group $(resourceGroup) \
-                  --template-file infra/dev-infra.bicep \
-                  --parameters \
-                    storageAccountName=$(storageAccountName) \
-                    webAppName=$(webAppName) \
-                    appServicePlanName=$(appServicePlanName)
+                  --resource-group $(resourceGroupDev) \
+                  --template-file infra/main.bicep \
+                  --parameters @infra/dev.parameters.json
 
           - download: current
             artifact: backend-drop
@@ -167,7 +216,7 @@ stages:
             displayName: 'Deploy backend to App Service (ZIP deploy)'
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
-              appName: '$(backendAppName)-dev'
+              appName: '$(backendAppNameDev)'
               package: '$(Pipeline.Workspace)/backend-drop'
 
   - deployment: DeployFrontendDev
@@ -188,8 +237,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az storage blob upload-batch --account-name $(frontendStorageAccount) --source $(Pipeline.Workspace)/frontend-dist --destination '
-                $web --overwrite true
+                az storage blob upload-batch --account-name $(frontendStorageAccountDev) --source $(Pipeline.Workspace)/frontend-dist --destination '$web' --overwrite true
 
 - stage: Deploy_UAT
   displayName: Deploy to UAT
@@ -205,13 +253,40 @@ stages:
       runOnce:
         deploy:
           steps:
+          - task: AzureCLI@2
+            displayName: 'Provision UAT infra (Bicep)'
+            condition: and(succeeded(), eq(variables['provisionInfra'], 'true'))
+            inputs:
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                set -euo pipefail
+                echo "Creating resource group $(resourceGroupUat) in $(location)"
+                az group create -n $(resourceGroupUat) -l $(location)
+
+                echo "Deploying infra/main.bicep using infra/uat.parameters.json"
+                echo "What-If: infra/main.bicep (UAT)"
+                az deployment group what-if \
+                  --resource-group $(resourceGroupUat) \
+                  --template-file infra/main.bicep \
+                  --parameters @infra/uat.parameters.json \
+                  --output json > $(Pipeline.Workspace)/whatif-uat.json || true
+
+                echo "what-if saved to $(Pipeline.Workspace)/whatif-uat.json (no blocking in UAT)"
+
+                echo "Deploying infra/main.bicep using infra/uat.parameters.json"
+                az deployment group create \
+                  --resource-group $(resourceGroupUat) \
+                  --template-file infra/main.bicep \
+                  --parameters @infra/uat.parameters.json
           - download: current
             artifact: backend-drop
           - task: AzureWebApp@1
             displayName: 'Deploy backend to App Service (UAT)'
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
-              appName: '$(backendAppName)-uat'
+              appName: '$(backendAppNameUat)'
               package: '$(Pipeline.Workspace)/backend-drop'
 
   - deployment: DeployFrontendUAT
@@ -232,8 +307,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az storage blob upload-batch --account-name $(frontendStorageAccount) --source $(Pipeline.Workspace)/frontend-dist --destination '
-                $web --overwrite true
+                az storage blob upload-batch --account-name $(frontendStorageAccountUat) --source $(Pipeline.Workspace)/frontend-dist --destination '$web' --overwrite true
           - task: NodeTool@0
             displayName: 'Run Playwright e2e against UAT'
             inputs:
@@ -277,6 +351,38 @@ stages:
       runOnce:
         deploy:
           steps:
+          - task: AzureCLI@2
+            displayName: 'Provision Prod infra (Bicep)'
+            condition: and(succeeded(), eq(variables['provisionInfra'], 'true'))
+            inputs:
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                set -euo pipefail
+                echo "Creating resource group $(resourceGroupProd) in $(location)"
+                az group create -n $(resourceGroupProd) -l $(location)
+
+                echo "Deploying infra/main.bicep using infra/prod.parameters.json"
+                echo "What-If: infra/main.bicep (Prod)"
+                az deployment group what-if \
+                  --resource-group $(resourceGroupProd) \
+                  --template-file infra/main.bicep \
+                  --parameters @infra/prod.parameters.json \
+                  --output json > $(Pipeline.Workspace)/whatif-prod.json || true
+
+                echo "Checking what-if output for destructive changes..."
+                if grep -Eq '"changeType"\s*:\s*"(Delete|Replace)"' $(Pipeline.Workspace)/whatif-prod.json; then
+                  echo "ERROR: Destructive changes detected by what-if. Aborting deployment."
+                  cat $(Pipeline.Workspace)/whatif-prod.json
+                  exit 1
+                fi
+
+                echo "Deploying infra/main.bicep using infra/prod.parameters.json"
+                az deployment group create \
+                  --resource-group $(resourceGroupProd) \
+                  --template-file infra/main.bicep \
+                  --parameters @infra/prod.parameters.json
           - download: current
             artifact: backend-drop
           - task: AzureCLI@2
@@ -311,7 +417,7 @@ stages:
             displayName: 'Deploy backend to App Service (Prod)'
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
-              appName: '$(backendAppName)'
+              appName: '$(backendAppNameProd)'
               package: '$(Pipeline.Workspace)/backend-drop'
 
   - deployment: DeployFrontendProd
@@ -333,8 +439,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az storage blob upload-batch --account-name $(frontendStorageAccount) --source $(Pipeline.Workspace)/frontend-dist --destination '
-                $web --overwrite true
+                az storage blob upload-batch --account-name $(frontendStorageAccountProd) --source $(Pipeline.Workspace)/frontend-dist --destination '$web' --overwrite true
 
 # Notes:
 # - Set pipeline variables (azureSubscription, resourceGroup, backendAppName, frontendStorageAccount, acrName) in the pipeline UI or use a variable group linked to Key Vault.
