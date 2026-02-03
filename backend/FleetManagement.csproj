@@ -5,6 +5,23 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- Disable Razor's default generation of assembly attributes to avoid duplicates -->
+    <EnableDefaultRazorTargetAssemblyInfoAttributes>false</EnableDefaultRazorTargetAssemblyInfoAttributes>
+    <GenerateRazorTargetAssemblyInfo>false</GenerateRazorTargetAssemblyInfo>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Prevent SDK from auto-generating common assembly attributes (avoid duplicates) -->
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <!-- Prevent generation of TargetFramework attribute to avoid duplicate TargetFrameworkAttribute -->
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
@@ -20,5 +37,9 @@
     <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Blobs" Version="1.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.2" />
+  </ItemGroup>
+  <!-- Exclude test sources located under backend/tests from the web project auto-includes -->
+  <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
   </ItemGroup>
 </Project>

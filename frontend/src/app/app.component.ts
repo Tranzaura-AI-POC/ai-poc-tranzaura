@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { HomepageComponent } from './homepage.component';
 import { AppointmentsComponent } from './appointments.component';
 import { AuthService } from './auth.service';
+import { IdleService } from './idle.service';
 import { ToastComponent } from './toast.component';
 import { AdminOnlyDirective } from './admin-only.directive';
 
@@ -48,7 +49,7 @@ import { AdminOnlyDirective } from './admin-only.directive';
 })
 export class AppComponent {
   year = new Date().getFullYear();
-  constructor(public auth: AuthService, private router: Router) {}
+  constructor(public auth: AuthService, private router: Router, private _idle: IdleService) {}
 
   signOut() {
     this.auth.logout();

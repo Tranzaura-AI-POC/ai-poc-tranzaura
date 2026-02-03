@@ -201,6 +201,16 @@ Notes:
 - `FORCE_HTTPS` is intended for local parity and debugging; do not skip certificate validation in tests or production.
 - If you run Playwright or other E2E tests against HTTPS, ensure tests point to the `https://` API URL or set any test-specific `FLEET_API_URL`/environment variables your test harness supports.
 
+## Infrastructure & CI
+
+- This repository includes a parameterized Bicep template and per-environment parameter files under `infra/` for provisioning Azure resources. See [infra/README.md](infra/README.md) for detailed instructions.
+- The CI pipeline (`[azure-pipelines.yml](azure-pipelines.yml)`) now deploys infra per environment using `infra/main.bicep` plus `infra/dev.parameters.json`, `infra/uat.parameters.json`, and `infra/prod.parameters.json`.
+- Deployments are targeted to separate resource groups (`resourceGroupDev`, `resourceGroupUat`, `resourceGroupProd`) to keep Dev/UAT/Prod resources isolated.
+- The pipeline runs an Azure CLI `what-if` preview before applying infra changes; destructive changes (Delete or Replace) will block the Prod deployment.
+- Pipeline variable names for environment-specific services: `backendAppNameDev|Uat|Prod`, `frontendStorageAccountDev|Uat|Prod`, and similarly for storage/app-service plan names. See the variables block in [azure-pipelines.yml](azure-pipelines.yml) for exact names.
+- The pipeline will run EF Core migrations only when a `FLEET_CONNECTION_STRING` secret is provided to the pipeline (see pipeline notes). Default behavior is to skip migrations when no connection string is supplied.
+
+
 ## DataProtection keys (Azure Blob Storage)
 
 For multi-instance deployments you should persist ASP.NET Core DataProtection keys to a central store. This project supports persisting keys to Azure Blob Storage when configured; otherwise it falls back to a local filesystem path.
