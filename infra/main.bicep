@@ -32,6 +32,26 @@ param webAppName string = 'ai-poc-backend-dev'
 @description('Storage account name for frontend static website (lowercase)')
 param storageAccountName string
 
+@minLength(3)
+@maxLength(63)
+@description('SQL server name (unique within Azure)')
+param sqlServerName string = 'ai-poc-sql-dev'
+
+@minLength(1)
+@maxLength(128)
+@description('SQL administrator login')
+param sqlAdministratorLogin string = 'sqladmin'
+
+@secure()
+@minLength(8)
+@description('SQL administrator password (set securely in parameters or pipeline)')
+param sqlAdministratorPassword string
+
+@minLength(1)
+@maxLength(128)
+@description('Database name')
+param databaseName string = 'FleetDb'
+
 var sku = {
   name: 'B1'
   tier: 'Basic'
@@ -86,6 +106,22 @@ resource staticContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
     publicAccess: 'None'
   }
 }
+// Dev-only: deploy an Azure SQL module when `environment` == 'Dev'
+module sqlModule 'modules/sql.bicep' = if (environment == 'Dev') {
+  name: 'devSql'
+  params: {
+    location: location
+    sqlServerName: sqlServerName
+    sqlAdministratorLogin: sqlAdministratorLogin
+    sqlAdministratorPassword: sqlAdministratorPassword
+    databaseName: databaseName
+    resourceTags: resourceTags
+  }
+}
 
 output webAppUrl string = 'https://${webApp.properties.defaultHostName}'
 output storageAccountNameOut string = storage.name
+output sqlServerNameOut string = sqlServerName
+output sqlDatabaseNameOut string = databaseName
+// Connection string (dev convenience). For production, prefer Key Vault and not exposing passwords.
+output sqlConnectionString string = 'Server=tcp:${sqlServerName}.database.windows.net,1433;Initial Catalog=${databaseName};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'

@@ -8,5 +8,10 @@
     "environment": { "value": "Dev" },
     "project": { "value": "ai-poc-tranzaura" },
     "owner": { "value": "team-name" }
+    ,
+    "sqlServerName": { "value": "ai-poc-sql-dev" },
+    "sqlAdministratorLogin": { "value": "sqladmin" },
+    "sqlAdministratorPassword": { "value": "ChangeMe123!" },
+    "databaseName": { "value": "FleetDb" }
   }
 }

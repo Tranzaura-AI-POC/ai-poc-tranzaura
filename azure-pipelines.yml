@@ -138,7 +138,7 @@ stages:
         npm ci
         npm run build -- --configuration production
       displayName: 'npm ci & build (frontend)'
-    - publish: frontend/dist
+    - publish: frontend/dist/fleet-frontend
       artifact: frontend-dist
 
 - stage: Deploy_Dev
@@ -171,7 +171,7 @@ stages:
                 az deployment group what-if \
                   --resource-group $(resourceGroupDev) \
                   --template-file infra/main.bicep \
-                  --parameters @infra/dev.parameters.json \
+                  --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword) \
                   --output json > $(Pipeline.Workspace)/whatif-dev.json || true
 
                 echo "what-if saved to $(Pipeline.Workspace)/whatif-dev.json (no blocking in Dev)"
@@ -180,7 +180,7 @@ stages:
                 az deployment group create \
                   --resource-group $(resourceGroupDev) \
                   --template-file infra/main.bicep \
-                  --parameters @infra/dev.parameters.json
+                  --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword)
 
           - download: current
             artifact: backend-drop

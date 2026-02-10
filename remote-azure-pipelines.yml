@@ -96,7 +96,7 @@ stages:
         npm ci
         npm run build -- --configuration production
       displayName: 'npm ci & build (frontend)'
-    - publish: frontend/dist
+    - publish: frontend/dist/fleet-frontend
       artifact: frontend-dist
 
 - stage: Deploy_Dev
@@ -124,14 +124,11 @@ stages:
                 echo "Creating resource group $(resourceGroup) in $(location)"
                 az group create -n $(resourceGroup) -l $(location)
                 
-                echo "Deploying infra/dev-infra.bicep"
+                echo "Deploying infra/main.bicep using infra/dev.parameters.json"
                 az deployment group create \
                   --resource-group $(resourceGroup) \
-                  --template-file infra/dev-infra.bicep \
-                  --parameters \
-                    storageAccountName=$(storageAccountName) \
-                    webAppName=$(webAppName) \
-                    appServicePlanName=$(appServicePlanName)
+                  --template-file infra/main.bicep \
+                  --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword)
 
           - download: current
             artifact: backend-drop
