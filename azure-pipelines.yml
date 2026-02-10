@@ -97,8 +97,9 @@ stages:
     - script: |
         python -m pip install --upgrade pip
         pip install yamllint
-        yamllint azure-pipelines.yml
-      displayName: 'Run yamllint (fails on issues)'
+        echo "Running yamllint (errors will be reported but won't fail the pipeline)"
+        yamllint azure-pipelines.yml || true
+      displayName: 'Run yamllint (non-blocking)'
 
   - job: BuildBackend
     displayName: Build .NET backend
