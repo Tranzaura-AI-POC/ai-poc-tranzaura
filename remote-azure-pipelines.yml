@@ -139,6 +139,50 @@ stages:
               appName: '$(backendAppName)-dev'
               package: '$(Pipeline.Workspace)/backend-drop'
 
+  # Ensure sources are available for optional DB migrations
+  - deployment: DeployBackendDev_Migrations
+    displayName: 'Run Migrations (optional)'
+    environment: 'dev'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+            clean: true
+          - task: UseDotNet@2
+            displayName: 'Use .NET SDK 8'
+            inputs:
+              packageType: 'sdk'
+              version: '8.0.x'
+          - task: AzureCLI@2
+            displayName: 'Run DB migrations (optional)'
+            inputs:
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Run EF Core migrations from pipeline if configured"
+                if [ -z "${FLEET_CONNECTION_STRING:-}" ]; then
+                  echo "FLEET_CONNECTION_STRING not set; skipping migrations. To run migrations set pipeline secret 'FLEET_CONNECTION_STRING'."
+                  exit 0
+                fi
+                set -euo pipefail
+                echo "Changing to repository sources directory: $(Build.SourcesDirectory)"
+                cd "$(Build.SourcesDirectory)"
+                echo "Installing dotnet-ef tool..."
+                dotnet --version || true
+                export DOTNET_CLI_TELEMETRY_OPTOUT=1
+                dotnet tool install --global dotnet-ef --version 8.* || true
+                export PATH="$HOME/.dotnet/tools:$PATH"
+                echo "Running migrations against Azure SQL using provided connection string"
+                dotnet ef database update \
+                  --project backend/FleetManagement.csproj \
+                  --startup-project backend \
+                  --configuration $(buildConfiguration) \
+                  --connection "${FLEET_CONNECTION_STRING}"
+
   - deployment: DeployFrontendDev
     displayName: Deploy frontend to Static Website (dev)
     environment: 'dev'
