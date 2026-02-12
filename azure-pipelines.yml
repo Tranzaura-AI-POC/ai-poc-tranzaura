@@ -28,7 +28,7 @@ variables:
   - name: backendAppNameProd
     value: 'ai-poc-backend-prod'
   - name: frontendStorageAccountDev
-    value: 'ai-poc-frontend-storage-dev'
+    value: 'aipocfrontendstoragedev'
   - name: frontendStorageAccountUat
     value: 'ai-poc-frontend-storage-uat'
   - name: frontendStorageAccountProd
