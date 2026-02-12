@@ -50,7 +50,7 @@ variables:
   - name: location
     value: 'uksouth'
   - name: storageAccountNameDev
-    value: 'ai-poc-storage-dev'
+    value: 'aipocstoragedev'
   - name: storageAccountNameUat
     value: 'ai-poc-storage-uat'
   - name: storageAccountNameProd
@@ -159,35 +159,37 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
           set -euo pipefail
+          echo "Verifying Dev resources exist (pipeline will not create them)."
+
           echo "Checking resource group $(resourceGroupDev)"
-          rgExists=$(az group exists -n $(resourceGroupDev))
-          echo "rgExists=$rgExists"
+          if az group show -n $(resourceGroupDev) >/dev/null 2>&1; then
+            echo "Resource group exists: $(resourceGroupDev)"
+          else
+            echo "ERROR: Resource group $(resourceGroupDev) not found. Create it manually before running the pipeline."
+            exit 1
+          fi
 
           echo "Checking App Service $(backendAppNameDev)"
           if az webapp show --name $(backendAppNameDev) --resource-group $(resourceGroupDev) >/dev/null 2>&1; then
-            echo "App Service exists; skipping provisioning"
-            exit 0
+            echo "App Service exists: $(backendAppNameDev)"
+          else
+            echo "ERROR: App Service $(backendAppNameDev) not found in RG $(resourceGroupDev). Create it manually before running the pipeline."
+            exit 1
           fi
 
-          echo "App Service not found."
-          if [ "$(provisionInfra)" = "true" ]; then
-            echo "Provisioning infra (resource group may be created)..."
-            az group create -n $(resourceGroupDev) -l $(location) || true
-            echo "What-If: infra/main.bicep (Dev)"
-            az deployment group what-if \
-              --resource-group $(resourceGroupDev) \
-              --template-file infra/main.bicep \
-              --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword) \
-              --output json > $(Pipeline.Workspace)/whatif-dev.json || true
-            echo "what-if saved to $(Pipeline.Workspace)/whatif-dev.json"
-            echo "Deploying infra/main.bicep using infra/dev.parameters.json"
-            az deployment group create \
-              --resource-group $(resourceGroupDev) \
-              --template-file infra/main.bicep \
-              --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword)
+          echo "Checking Storage Account $(storageAccountNameDev)"
+          if az storage account show -n $(storageAccountNameDev) -g $(resourceGroupDev) >/dev/null 2>&1; then
+            echo "Storage account exists: $(storageAccountNameDev)"
           else
-            echo "ERROR: App Service $(backendAppNameDev) does not exist in RG $(resourceGroupDev)."
-            echo "Set pipeline variable 'provisionInfra' to 'true' to create infra, or create the resources manually before running this pipeline."
+            echo "ERROR: Storage account $(storageAccountNameDev) not found in RG $(resourceGroupDev). Create it manually before running the pipeline."
+            exit 1
+          fi
+
+          echo "Checking App Service Plan $(appServicePlanNameDev)"
+          if az appservice plan show -n $(appServicePlanNameDev) -g $(resourceGroupDev) >/dev/null 2>&1; then
+            echo "App Service plan exists: $(appServicePlanNameDev)"
+          else
+            echo "ERROR: App Service plan $(appServicePlanNameDev) not found in RG $(resourceGroupDev). Create it manually before running the pipeline."
             exit 1
           fi
 
