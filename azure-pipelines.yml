@@ -146,8 +146,54 @@ stages:
   displayName: Deploy to Dev
   dependsOn: Build
   jobs:
+  - job: EnsureInfra
+    displayName: 'Ensure Dev infrastructure (idempotent)'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Check and optionally provision Dev infra'
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          set -euo pipefail
+          echo "Checking resource group $(resourceGroupDev)"
+          rgExists=$(az group exists -n $(resourceGroupDev))
+          echo "rgExists=$rgExists"
+
+          echo "Checking App Service $(backendAppNameDev)"
+          if az webapp show --name $(backendAppNameDev) --resource-group $(resourceGroupDev) >/dev/null 2>&1; then
+            echo "App Service exists; skipping provisioning"
+            exit 0
+          fi
+
+          echo "App Service not found."
+          if [ "$(provisionInfra)" = "true" ]; then
+            echo "Provisioning infra (resource group may be created)..."
+            az group create -n $(resourceGroupDev) -l $(location) || true
+            echo "What-If: infra/main.bicep (Dev)"
+            az deployment group what-if \
+              --resource-group $(resourceGroupDev) \
+              --template-file infra/main.bicep \
+              --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword) \
+              --output json > $(Pipeline.Workspace)/whatif-dev.json || true
+            echo "what-if saved to $(Pipeline.Workspace)/whatif-dev.json"
+            echo "Deploying infra/main.bicep using infra/dev.parameters.json"
+            az deployment group create \
+              --resource-group $(resourceGroupDev) \
+              --template-file infra/main.bicep \
+              --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword)
+          else
+            echo "ERROR: App Service $(backendAppNameDev) does not exist in RG $(resourceGroupDev)."
+            echo "Set pipeline variable 'provisionInfra' to 'true' to create infra, or create the resources manually before running this pipeline."
+            exit 1
+          fi
+
   - deployment: DeployBackendDev
     displayName: Deploy backend to App Service (dev)
+    dependsOn: EnsureInfra
     environment: 'dev'    # configure environment in Azure DevOps for approvals if desired
     pool:
       vmImage: 'ubuntu-latest'
@@ -155,34 +201,6 @@ stages:
       runOnce:
         deploy:
           steps:
-          - task: AzureCLI@2
-            displayName: 'Provision Dev infra (Bicep)'
-            condition: and(succeeded(), eq(variables['provisionInfra'], 'true'))
-            inputs:
-              azureSubscription: 'Tranzaura-AI-POC-Azure'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                set -euo pipefail
-                echo "Creating resource group $(resourceGroupDev) in $(location)"
-                az group create -n $(resourceGroupDev) -l $(location)
-
-                echo "Deploying infra/main.bicep using infra/dev.parameters.json"
-                echo "What-If: infra/main.bicep (Dev)"
-                az deployment group what-if \
-                  --resource-group $(resourceGroupDev) \
-                  --template-file infra/main.bicep \
-                  --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword) \
-                  --output json > $(Pipeline.Workspace)/whatif-dev.json || true
-
-                echo "what-if saved to $(Pipeline.Workspace)/whatif-dev.json (no blocking in Dev)"
-
-                echo "Deploying infra/main.bicep using infra/dev.parameters.json"
-                az deployment group create \
-                  --resource-group $(resourceGroupDev) \
-                  --template-file infra/main.bicep \
-                  --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword)
-
           - download: current
             artifact: backend-drop
           - checkout: self
@@ -265,7 +283,7 @@ stages:
           steps:
           - task: AzureCLI@2
             displayName: 'Provision UAT infra (Bicep)'
-            condition: and(succeeded(), eq(variables['provisionInfra'], 'true'))
+            condition: and(succeeded(), ne(variables['provisionInfra'], 'false'))
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
@@ -363,7 +381,7 @@ stages:
           steps:
           - task: AzureCLI@2
             displayName: 'Provision Prod infra (Bicep)'
-            condition: and(succeeded(), eq(variables['provisionInfra'], 'true'))
+            condition: and(succeeded(), ne(variables['provisionInfra'], 'false'))
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'

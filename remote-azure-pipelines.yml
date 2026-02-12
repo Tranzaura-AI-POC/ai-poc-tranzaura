@@ -18,45 +18,63 @@ variables:
   - name: frontendStorageAccount
     value: ''
   - name: acrName
-    value: ''
+  - job: EnsureInfra
+    displayName: 'Ensure Dev infrastructure (idempotent)'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Check and optionally provision Dev infra'
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          set -euo pipefail
+          echo "Checking resource group $(resourceGroupDev)"
+          rgExists=$(az group exists -n $(resourceGroupDev))
+          echo "rgExists=$rgExists"
+
+          echo "Checking App Service $(backendAppNameDev)"
+          if az webapp show --name $(backendAppNameDev) --resource-group $(resourceGroupDev) >/dev/null 2>&1; then
+            echo "App Service exists; skipping provisioning"
+            exit 0
+          fi
+
+          echo "App Service not found."
+          if [ "$(provisionInfra)" = "true" ]; then
+            echo "Provisioning infra (resource group may be created)..."
+            az group create -n $(resourceGroupDev) -l $(location) || true
+            echo "What-If: infra/main.bicep (Dev)"
+            az deployment group what-if \
+              --resource-group $(resourceGroupDev) \
+              --template-file infra/main.bicep \
+              --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword) \
+              --output json > $(Pipeline.Workspace)/whatif-dev.json || true
+            echo "what-if saved to $(Pipeline.Workspace)/whatif-dev.json"
+            echo "Deploying infra/main.bicep using infra/dev.parameters.json"
+            az deployment group create \
+              --resource-group $(resourceGroupDev) \
+              --template-file infra/main.bicep \
+              --parameters @infra/dev.parameters.json sqlAdministratorPassword=$(sqlAdministratorPassword)
+          else
+            echo "ERROR: App Service $(backendAppNameDev) does not exist in RG $(resourceGroupDev)."
+            echo "Set pipeline variable 'provisionInfra' to 'true' to create infra, or create the resources manually before running this pipeline."
+            exit 1
+          fi
+
+  - deployment: DeployBackendDev
   - name: imageName
+    dependsOn: EnsureInfra
     value: 'ai-poc-tranzaura'
   - name: buildConfiguration
     value: 'Release'
   # Control which stages run. For initial dev-only deployments keep these false.
   - name: deployUat
     value: 'false'
-  - name: deployProd
-    value: 'false'
-  # Dev infra provisioning (set to 'true' to run Bicep deploy step)
-  - name: provisionInfra
-    value: 'false'
-  - name: location
-    value: 'uksouth'
-  - name: storageAccountName
-    value: 'ai-poc-storage-dev'
-  - name: webAppName
-    value: 'ai-poc-backend-dev'
-  - name: appServicePlanName
-    value: 'ai-poc-plan-dev'
-
-stages:
-- stage: Build
-  displayName: Build and Test
-  jobs:
-  - job: ValidateRun
-    displayName: 'Validate pipeline run variables (ensure only Dev)'
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - script: |
-        echo "deployUat=$(deployUat)"
-        echo "deployProd=$(deployProd)"
-        if [ "$(deployUat)" = "true" ] || [ "$(deployProd)" = "true" ]; then
-          echo "ERROR: deployUat or deployProd are true. Aborting to avoid non-Dev deployments."
-          exit 1
-        fi
-      displayName: 'Ensure only Dev will be deployed'
+          steps:
+          - download: current
+            artifact: backend-drop
 
   - job: BuildBackend
     displayName: Build .NET backend
@@ -114,7 +132,7 @@ stages:
           steps:
           - task: AzureCLI@2
             displayName: 'Provision Dev infra (Bicep)'
-            condition: and(succeeded(), eq(variables['provisionInfra'], 'true'))
+            condition: and(succeeded(), ne(variables['provisionInfra'], 'false'))
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
