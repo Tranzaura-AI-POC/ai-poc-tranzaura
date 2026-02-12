@@ -66,7 +66,6 @@ import { AuthService } from './auth.service';
           <button class="auth-alert-close" (click)="clearError()" aria-label="Dismiss message">×</button>
         </div>
       </div>
-      <p class="auth-note">For local dev the seeded admin: <strong>admin</strong> / <strong>Password123!</strong></p>
 
       <p class="auth-note">
         <a class="auth-toggle" (click)="toggleRegister()">{{ isRegister ? 'Back to sign in' : 'Create an account' }}</a>

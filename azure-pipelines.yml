@@ -261,13 +261,35 @@ stages:
           - download: current
             artifact: frontend-dist
           - task: AzureCLI@2
-            displayName: 'Upload frontend to Storage Account static website (dev)'
+            displayName: 'Ensure static website and upload frontend to Storage Account (dev)'
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az storage blob upload-batch --account-name $(frontendStorageAccountDev) --source $(Pipeline.Workspace)/frontend-dist --destination '$web' --overwrite true
+                set -euo pipefail
+                echo "Ensuring static website settings and $web container exist for $(frontendStorageAccountDev)"
+                # Enable static website (idempotent) which ensures $web is available
+                az storage blob service-properties update \
+                  --account-name $(frontendStorageAccountDev) \
+                  --static-website \
+                  --index-document index.html \
+                  --404-document 404.html \
+                  --auth-mode login || true
+
+                # Ensure $web container exists (create if missing)
+                az storage container create \
+                  --name '$web' \
+                  --account-name $(frontendStorageAccountDev) \
+                  --auth-mode login || true
+
+                echo "Uploading frontend files to $(frontendStorageAccountDev) ($web)"
+                az storage blob upload-batch \
+                  --account-name $(frontendStorageAccountDev) \
+                  --source $(Pipeline.Workspace)/frontend-dist \
+                  --destination '$web' \
+                  --overwrite true \
+                  --auth-mode login
 
 - stage: Deploy_UAT
   displayName: Deploy to UAT
@@ -331,13 +353,33 @@ stages:
           - download: current
             artifact: frontend-dist
           - task: AzureCLI@2
-            displayName: 'Upload frontend to Storage Account static website (uat)'
+            displayName: 'Ensure static website and upload frontend to Storage Account (uat)'
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az storage blob upload-batch --account-name $(frontendStorageAccountUat) --source $(Pipeline.Workspace)/frontend-dist --destination '$web' --overwrite true
+                set -euo pipefail
+                echo "Ensuring static website settings and $web container exist for $(frontendStorageAccountUat)"
+                az storage blob service-properties update \
+                  --account-name $(frontendStorageAccountUat) \
+                  --static-website \
+                  --index-document index.html \
+                  --404-document 404.html \
+                  --auth-mode login || true
+
+                az storage container create \
+                  --name '$web' \
+                  --account-name $(frontendStorageAccountUat) \
+                  --auth-mode login || true
+
+                echo "Uploading frontend files to $(frontendStorageAccountUat) ($web)"
+                az storage blob upload-batch \
+                  --account-name $(frontendStorageAccountUat) \
+                  --source $(Pipeline.Workspace)/frontend-dist \
+                  --destination '$web' \
+                  --overwrite true \
+                  --auth-mode login
           - task: NodeTool@0
             displayName: 'Run Playwright e2e against UAT'
             inputs:
@@ -463,13 +505,33 @@ stages:
           - download: current
             artifact: frontend-dist
           - task: AzureCLI@2
-            displayName: 'Upload frontend to Storage Account static website (prod)'
+            displayName: 'Ensure static website and upload frontend to Storage Account (prod)'
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az storage blob upload-batch --account-name $(frontendStorageAccountProd) --source $(Pipeline.Workspace)/frontend-dist --destination '$web' --overwrite true
+                set -euo pipefail
+                echo "Ensuring static website settings and $web container exist for $(frontendStorageAccountProd)"
+                az storage blob service-properties update \
+                  --account-name $(frontendStorageAccountProd) \
+                  --static-website \
+                  --index-document index.html \
+                  --404-document 404.html \
+                  --auth-mode login || true
+
+                az storage container create \
+                  --name '$web' \
+                  --account-name $(frontendStorageAccountProd) \
+                  --auth-mode login || true
+
+                echo "Uploading frontend files to $(frontendStorageAccountProd) ($web)"
+                az storage blob upload-batch \
+                  --account-name $(frontendStorageAccountProd) \
+                  --source $(Pipeline.Workspace)/frontend-dist \
+                  --destination '$web' \
+                  --overwrite true \
+                  --auth-mode login
 
 # Notes:
 # - Set pipeline variables (azureSubscription, resourceGroup, backendAppName, frontendStorageAccount, acrName) in the pipeline UI or use a variable group linked to Key Vault.

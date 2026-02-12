@@ -123,7 +123,9 @@ Invoke-RestMethod -Uri http://127.0.0.1:5000/api/ServiceAppointments
 	2) Run the tests locally (PowerShell example that avoids execution-policy issues):
 
 ```powershell
-$env:FLEET_USERNAME='admin'; $env:FLEET_PASSWORD='Password123!'; Push-Location 'C:\dev\ai-poc-tranzaura\frontend'; cmd /c "npm run e2e:pdf"; Pop-Location
+# Set test credentials in environment variables (do NOT commit these).
+# Replace the placeholders with your secure test credentials or load from a local `.env` file.
+$env:FLEET_USERNAME='your_username'; $env:FLEET_PASSWORD='your_password'; Push-Location 'C:\dev\ai-poc-tranzaura\frontend'; cmd /c "npm run e2e:pdf"; Pop-Location
 ```
 
 	- You can omit the inline env settings if you created a local `.env` and load it using your preferred dotenv loader, or set the vars in your CI environment.
