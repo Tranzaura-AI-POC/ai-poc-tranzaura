@@ -284,11 +284,14 @@ stages:
                   --auth-mode login || true
 
                 # Fail early with a clear message if the connection string secret isn't provided
+                # Debug: indicate whether the secret env var is present (we won't print the value)
                 if [ -z "${FRONTEND_STORAGE_CONNECTION_STRING_DEV:-}" ]; then
                   echo "ERROR: FRONTEND_STORAGE_CONNECTION_STRING_DEV is not set or is empty."
                   echo "Set the pipeline secret 'FRONTEND_STORAGE_CONNECTION_STRING_DEV' to the storage account connection string."
-                  echo "You can retrieve it with: az storage account show-connection-string -n ${storageAccountNameDev} -g ${resourceGroupDev} --query connectionString -o tsv"
+                  echo "You can retrieve it with: az storage account show-connection-string -n $(storageAccountNameDev) -g $(resourceGroupDev) --query connectionString -o tsv"
                   exit 1
+                else
+                  echo "FRONTEND_STORAGE_CONNECTION_STRING_DEV is present (masked)."
                 fi
 
                 echo "Uploading frontend files to $(frontendStorageAccountDev) (\$web) using connection string secret"
