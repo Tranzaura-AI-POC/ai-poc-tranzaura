@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-const API_BASE = '/api';
+import { API_BASE } from './runtime-api';
 
 @Injectable({ providedIn: 'root' })
 export class FleetService {
