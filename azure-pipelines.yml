@@ -283,13 +283,12 @@ stages:
                   --account-name $(frontendStorageAccountDev) \
                   --auth-mode login || true
 
-                echo "Uploading frontend files to $(frontendStorageAccountDev) (\$web)"
+                echo "Uploading frontend files to $(frontendStorageAccountDev) (\$web) using connection string secret"
                 az storage blob upload-batch \
-                  --account-name $(frontendStorageAccountDev) \
+                  --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_DEV}" \
                   --source $(Pipeline.Workspace)/frontend-dist \
                   --destination '$web' \
-                  --overwrite true \
-                  --auth-mode login
+                  --overwrite true
 
 - stage: Deploy_UAT
   displayName: Deploy to UAT
@@ -373,13 +372,12 @@ stages:
                   --account-name $(frontendStorageAccountUat) \
                   --auth-mode login || true
 
-                echo "Uploading frontend files to $(frontendStorageAccountUat) (\$web)"
+                echo "Uploading frontend files to $(frontendStorageAccountUat) (\$web) using connection string secret"
                 az storage blob upload-batch \
-                  --account-name $(frontendStorageAccountUat) \
+                  --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_UAT}" \
                   --source $(Pipeline.Workspace)/frontend-dist \
                   --destination '$web' \
-                  --overwrite true \
-                  --auth-mode login
+                  --overwrite true
           - task: NodeTool@0
             displayName: 'Run Playwright e2e against UAT'
             inputs:
@@ -525,13 +523,12 @@ stages:
                   --account-name $(frontendStorageAccountProd) \
                   --auth-mode login || true
 
-                echo "Uploading frontend files to $(frontendStorageAccountProd) (\$web)"
+                echo "Uploading frontend files to $(frontendStorageAccountProd) (\$web) using connection string secret"
                 az storage blob upload-batch \
-                  --account-name $(frontendStorageAccountProd) \
+                  --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_PROD}" \
                   --source $(Pipeline.Workspace)/frontend-dist \
                   --destination '$web' \
-                  --overwrite true \
-                  --auth-mode login
+                  --overwrite true
 
 # Notes:
 # - Set pipeline variables (azureSubscription, resourceGroup, backendAppName, frontendStorageAccount, acrName) in the pipeline UI or use a variable group linked to Key Vault.
