@@ -318,6 +318,10 @@ stages:
                   if [ -f "$INDEX_FILE" ]; then
                     echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameDev).azurewebsites.net/api"
                     perl -pe "s|<meta name=\"api-base-url\" content=\"\" */?>|<meta name=\"api-base-url\" content=\"https://$(webAppNameDev).azurewebsites.net/api\" />|g" -i "$INDEX_FILE" || true
+                    echo "---- index.html preview (first 40 lines) ----"
+                    head -n 40 "$INDEX_FILE" || true
+                    echo "---- meta tag grep ----"
+                    grep -n 'api-base-url' "$INDEX_FILE" || true
                   else
                     echo "Warning: $INDEX_FILE not found; skipping API base injection"
                   fi
@@ -424,6 +428,10 @@ stages:
                 if [ -f "$INDEX_FILE" ]; then
                   echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameUat).azurewebsites.net/api"
                   perl -pe "s|<meta name=\"api-base-url\" content=\"\" */?>|<meta name=\"api-base-url\" content=\"https://$(webAppNameUat).azurewebsites.net/api\" />|g" -i "$INDEX_FILE" || true
+                  echo "---- index.html preview (first 40 lines) ----"
+                  head -n 40 "$INDEX_FILE" || true
+                  echo "---- meta tag grep ----"
+                  grep -n 'api-base-url' "$INDEX_FILE" || true
                 else
                   echo "Warning: $INDEX_FILE not found; skipping API base injection"
                 fi
@@ -592,6 +600,10 @@ stages:
                 if [ -f "$INDEX_FILE" ]; then
                   echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameProd).azurewebsites.net/api"
                   perl -pe "s|<meta name=\"api-base-url\" content=\"\" */?>|<meta name=\"api-base-url\" content=\"https://$(webAppNameProd).azurewebsites.net/api\" />|g" -i "$INDEX_FILE" || true
+                  echo "---- index.html preview (first 40 lines) ----"
+                  head -n 40 "$INDEX_FILE" || true
+                  echo "---- meta tag grep ----"
+                  grep -n 'api-base-url' "$INDEX_FILE" || true
                 else
                   echo "Warning: $INDEX_FILE not found; skipping API base injection"
                 fi
