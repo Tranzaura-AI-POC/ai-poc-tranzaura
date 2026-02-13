@@ -316,8 +316,14 @@ stages:
                   # Inject runtime API base into the built index.html so the SPA calls the backend API
                   INDEX_FILE="$(Pipeline.Workspace)/frontend-dist/index.html"
                   if [ -f "$INDEX_FILE" ]; then
-                    echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameDev).azurewebsites.net/api"
-                    perl -pe 's#<meta[^>]*name="api-base-url"[^>]*>#<meta name="api-base-url" content="https://$(webAppNameDev).azurewebsites.net/api" />#ig' -i "$INDEX_FILE" || true
+                    echo "Resolving App Service host for $(backendAppNameDev) in $(resourceGroupDev)"
+                    APP_HOSTNAME="$(az webapp show --name $(backendAppNameDev) --resource-group $(resourceGroupDev) --query defaultHostName -o tsv 2>/dev/null || true)"
+                    if [ -z "$APP_HOSTNAME" ]; then
+                      echo "Warning: could not resolve defaultHostName; falling back to $(webAppNameDev).azurewebsites.net"
+                      APP_HOSTNAME="$(webAppNameDev).azurewebsites.net"
+                    fi
+                    echo "Patching API base meta in $INDEX_FILE -> https://$APP_HOSTNAME/api"
+                    perl -pe "s#<meta[^>]*name=\"api-base-url\"[^>]*>#<meta name=\"api-base-url\" content=\"https://$APP_HOSTNAME/api\" />#ig" -i "$INDEX_FILE" || true
                     echo "---- index.html preview (first 40 lines) ----"
                     head -n 40 "$INDEX_FILE" || true
                     echo "---- meta tag grep ----"
@@ -426,8 +432,14 @@ stages:
                 # Inject runtime API base into the built index.html so the SPA calls the backend API
                 INDEX_FILE="$(Pipeline.Workspace)/frontend-dist/index.html"
                 if [ -f "$INDEX_FILE" ]; then
-                  echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameUat).azurewebsites.net/api"
-                  perl -pe 's#<meta[^>]*name="api-base-url"[^>]*>#<meta name="api-base-url" content="https://$(webAppNameUat).azurewebsites.net/api" />#ig' -i "$INDEX_FILE" || true
+                  echo "Resolving App Service host for $(backendAppNameUat) in $(resourceGroupUat)"
+                  APP_HOSTNAME="$(az webapp show --name $(backendAppNameUat) --resource-group $(resourceGroupUat) --query defaultHostName -o tsv 2>/dev/null || true)"
+                  if [ -z "$APP_HOSTNAME" ]; then
+                    echo "Warning: could not resolve defaultHostName; falling back to $(webAppNameUat).azurewebsites.net"
+                    APP_HOSTNAME="$(webAppNameUat).azurewebsites.net"
+                  fi
+                  echo "Patching API base meta in $INDEX_FILE -> https://$APP_HOSTNAME/api"
+                  perl -pe "s#<meta[^>]*name=\"api-base-url\"[^>]*>#<meta name=\"api-base-url\" content=\"https://$APP_HOSTNAME/api\" />#ig" -i "$INDEX_FILE" || true
                   echo "---- index.html preview (first 40 lines) ----"
                   head -n 40 "$INDEX_FILE" || true
                   echo "---- meta tag grep ----"
@@ -598,8 +610,14 @@ stages:
                 # Inject runtime API base into the built index.html so the SPA calls the backend API
                 INDEX_FILE="$(Pipeline.Workspace)/frontend-dist/index.html"
                 if [ -f "$INDEX_FILE" ]; then
-                  echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameProd).azurewebsites.net/api"
-                  perl -pe 's#<meta[^>]*name="api-base-url"[^>]*>#<meta name="api-base-url" content="https://$(webAppNameProd).azurewebsites.net/api" />#ig' -i "$INDEX_FILE" || true
+                  echo "Resolving App Service host for $(backendAppNameProd) in $(resourceGroupProd)"
+                  APP_HOSTNAME="$(az webapp show --name $(backendAppNameProd) --resource-group $(resourceGroupProd) --query defaultHostName -o tsv 2>/dev/null || true)"
+                  if [ -z "$APP_HOSTNAME" ]; then
+                    echo "Warning: could not resolve defaultHostName; falling back to $(webAppNameProd).azurewebsites.net"
+                    APP_HOSTNAME="$(webAppNameProd).azurewebsites.net"
+                  fi
+                  echo "Patching API base meta in $INDEX_FILE -> https://$APP_HOSTNAME/api"
+                  perl -pe "s#<meta[^>]*name=\"api-base-url\"[^>]*>#<meta name=\"api-base-url\" content=\"https://$APP_HOSTNAME/api\" />#ig" -i "$INDEX_FILE" || true
                   echo "---- index.html preview (first 40 lines) ----"
                   head -n 40 "$INDEX_FILE" || true
                   echo "---- meta tag grep ----"
