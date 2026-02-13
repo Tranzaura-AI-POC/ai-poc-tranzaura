@@ -73,6 +73,7 @@ END");
 
             if (enableSeeding)
             {
+                var _madeChanges = false;
                 if (!context.AssetTypes.Any())
                 {
                     context.AssetTypes.AddRange(new AssetType { Name = "Truck" },
@@ -80,6 +81,7 @@ END");
                                                new AssetType { Name = "Sedan" },
                                                new AssetType { Name = "SUV" },
                                                new AssetType { Name = "Other" });
+                    _madeChanges = true;
                 }
 
                 if (!context.ServiceCenters.Any())
@@ -88,6 +90,27 @@ END");
                         new ServiceCenter { Name = "Central Service", Address = "100 Main St", City = "Springfield", State = "CA", Zip = "90001" },
                         new ServiceCenter { Name = "Northside Service", Address = "55 North Rd", City = "Shelbyville", State = "CA", Zip = "90002" },
                         new ServiceCenter { Name = "Eastfield Garage", Address = "200 East Ave", City = "Ogden", State = "CA", Zip = "90003" }
+                    );
+                    _madeChanges = true;
+                }
+
+                // If we added lookups, persist them before creating appointments so their IDs are available.
+                if (_madeChanges)
+                {
+                    context.SaveChanges();
+                }
+
+                // Seed a few example appointments so the UI shows data on first-run.
+                if (!context.ServiceAppointments.Any())
+                {
+                    // Use existing AssetType and ServiceCenter IDs (assumes the lookup seeds above or pre-existing data)
+                    var now = DateTime.UtcNow;
+                    // pick some likely IDs; if lookups were just created above they will have IDs starting at 1
+                    context.ServiceAppointments.AddRange(
+                        new ServiceAppointment { AssetTypeId = 1, ServiceCenterId = 1, AppointmentDate = now.AddDays(3), AssetMake = "Ford", AssetYear = 2018, Notes = "Routine maintenance and oil change." },
+                        new ServiceAppointment { AssetTypeId = 2, ServiceCenterId = 2, AppointmentDate = now.AddDays(7), AssetMake = "Mercedes", AssetYear = 2020, Notes = "Brake inspection." },
+                        new ServiceAppointment { AssetTypeId = 3, ServiceCenterId = 1, AppointmentDate = now.AddDays(10), AssetMake = "Toyota", AssetYear = 2016, Notes = "Transmission check — customer reports slipping." },
+                        new ServiceAppointment { AssetTypeId = 4, ServiceCenterId = 3, AppointmentDate = now.AddDays(14), AssetMake = "Honda", AssetYear = 2019, Notes = "Scheduled recall repair." }
                     );
                 }
 
