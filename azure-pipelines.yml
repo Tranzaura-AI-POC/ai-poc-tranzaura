@@ -262,6 +262,8 @@ stages:
             artifact: frontend-dist
           - task: AzureCLI@2
             displayName: 'Ensure static website and upload frontend to Storage Account (dev)'
+            env:
+              FRONTEND_STORAGE_CONNECTION_STRING_DEV: $(FRONTEND_STORAGE_CONNECTION_STRING_DEV)
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
@@ -292,6 +294,8 @@ stages:
                   exit 1
                 else
                   echo "FRONTEND_STORAGE_CONNECTION_STRING_DEV is present (masked)."
+                  # Print only the length of the secret to aid debugging without revealing value
+                  echo "FRONTEND_STORAGE_CONNECTION_STRING_DEV length: ${#FRONTEND_STORAGE_CONNECTION_STRING_DEV}"
                 fi
 
                 echo "Uploading frontend files to $(frontendStorageAccountDev) (\$web) using connection string secret"
