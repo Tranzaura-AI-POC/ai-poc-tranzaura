@@ -268,7 +268,7 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 set -euo pipefail
-                echo "Ensuring static website settings and $web container exist for $(frontendStorageAccountDev)"
+                echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountDev)"
                 # Enable static website (idempotent) which ensures $web is available
                 az storage blob service-properties update \
                   --account-name $(frontendStorageAccountDev) \
@@ -360,7 +360,7 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 set -euo pipefail
-                echo "Ensuring static website settings and $web container exist for $(frontendStorageAccountUat)"
+                echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountUat)"
                 az storage blob service-properties update \
                   --account-name $(frontendStorageAccountUat) \
                   --static-website \
@@ -512,7 +512,7 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 set -euo pipefail
-                echo "Ensuring static website settings and $web container exist for $(frontendStorageAccountProd)"
+                echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountProd)"
                 az storage blob service-properties update \
                   --account-name $(frontendStorageAccountProd) \
                   --static-website \
