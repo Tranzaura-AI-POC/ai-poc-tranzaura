@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Runtime API base: set this meta tag or the global `window.__env.API_BASE` at deploy time
+         to point the SPA to the backend API (e.g. https://ai-poc-backend-dev.azurewebsites.net/api).
+         Leaving it empty will default to '/api' which works when the SPA is served from the same origin as the API. -->
+    <meta name="api-base-url" content="" />
     <base href="/" />
     <title>Fleet Frontend</title>
   </head>

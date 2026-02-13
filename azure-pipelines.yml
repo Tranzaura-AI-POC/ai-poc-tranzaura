@@ -272,12 +272,20 @@ stages:
                 set -eo pipefail
                 echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountDev)"
                 # Enable static website (idempotent) which ensures $web is available
-                az storage blob service-properties update \
-                  --account-name $(frontendStorageAccountDev) \
-                  --static-website \
-                  --index-document index.html \
-                  --404-document 404.html \
-                  --auth-mode login || true
+                if [ -n "${FRONTEND_STORAGE_CONNECTION_STRING_DEV:-}" ]; then
+                  az storage blob service-properties update \
+                    --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_DEV}" \
+                    --static-website \
+                    --index-document index.html \
+                    --404-document 404.html || true
+                else
+                  az storage blob service-properties update \
+                    --account-name $(frontendStorageAccountDev) \
+                    --static-website \
+                    --index-document index.html \
+                    --404-document 404.html \
+                    --auth-mode login || true
+                fi
 
                 # Ensure $web container exists (create if missing)
                 # Prefer creating the $web container with the provided connection string (data-plane),
@@ -305,8 +313,16 @@ stages:
                   # Print only the length of the secret to aid debugging without revealing value
                   echo "FRONTEND_STORAGE_CONNECTION_STRING_DEV length: ${#FRONTEND_STORAGE_CONNECTION_STRING_DEV}"
                 fi
+                  # Inject runtime API base into the built index.html so the SPA calls the backend API
+                  INDEX_FILE="$(Pipeline.Workspace)/frontend-dist/index.html"
+                  if [ -f "$INDEX_FILE" ]; then
+                    echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameDev).azurewebsites.net/api"
+                    perl -pe "s|<meta name=\"api-base-url\" content=\"\" */?>|<meta name=\"api-base-url\" content=\"https://$(webAppNameDev).azurewebsites.net/api\" />|g" -i "$INDEX_FILE" || true
+                  else
+                    echo "Warning: $INDEX_FILE not found; skipping API base injection"
+                  fi
 
-                echo "Uploading frontend files to $(frontendStorageAccountDev) (\$web) using connection string secret"
+                  echo "Uploading frontend files to $(frontendStorageAccountDev) (\$web) using connection string secret"
                 az storage blob upload-batch \
                   --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_DEV}" \
                   --source $(Pipeline.Workspace)/frontend-dist \
@@ -383,17 +399,34 @@ stages:
               inlineScript: |
                 set -euo pipefail
                 echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountUat)"
-                az storage blob service-properties update \
-                  --account-name $(frontendStorageAccountUat) \
-                  --static-website \
-                  --index-document index.html \
-                  --404-document 404.html \
-                  --auth-mode login || true
+                if [ -n "${FRONTEND_STORAGE_CONNECTION_STRING_UAT:-}" ]; then
+                  az storage blob service-properties update \
+                    --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_UAT}" \
+                    --static-website \
+                    --index-document index.html \
+                    --404-document 404.html || true
+                else
+                  az storage blob service-properties update \
+                    --account-name $(frontendStorageAccountUat) \
+                    --static-website \
+                    --index-document index.html \
+                    --404-document 404.html \
+                    --auth-mode login || true
+                fi
 
                 az storage container create \
                   --name '$web' \
                   --account-name $(frontendStorageAccountUat) \
                   --auth-mode login || true
+
+                # Inject runtime API base into the built index.html so the SPA calls the backend API
+                INDEX_FILE="$(Pipeline.Workspace)/frontend-dist/index.html"
+                if [ -f "$INDEX_FILE" ]; then
+                  echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameUat).azurewebsites.net/api"
+                  perl -pe "s|<meta name=\"api-base-url\" content=\"\" */?>|<meta name=\"api-base-url\" content=\"https://$(webAppNameUat).azurewebsites.net/api\" />|g" -i "$INDEX_FILE" || true
+                else
+                  echo "Warning: $INDEX_FILE not found; skipping API base injection"
+                fi
 
                 echo "Uploading frontend files to $(frontendStorageAccountUat) (\$web) using connection string secret"
                 az storage blob upload-batch \
@@ -534,17 +567,34 @@ stages:
               inlineScript: |
                 set -euo pipefail
                 echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountProd)"
-                az storage blob service-properties update \
-                  --account-name $(frontendStorageAccountProd) \
-                  --static-website \
-                  --index-document index.html \
-                  --404-document 404.html \
-                  --auth-mode login || true
+                if [ -n "${FRONTEND_STORAGE_CONNECTION_STRING_PROD:-}" ]; then
+                  az storage blob service-properties update \
+                    --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_PROD}" \
+                    --static-website \
+                    --index-document index.html \
+                    --404-document 404.html || true
+                else
+                  az storage blob service-properties update \
+                    --account-name $(frontendStorageAccountProd) \
+                    --static-website \
+                    --index-document index.html \
+                    --404-document 404.html \
+                    --auth-mode login || true
+                fi
 
                 az storage container create \
                   --name '$web' \
                   --account-name $(frontendStorageAccountProd) \
                   --auth-mode login || true
+
+                # Inject runtime API base into the built index.html so the SPA calls the backend API
+                INDEX_FILE="$(Pipeline.Workspace)/frontend-dist/index.html"
+                if [ -f "$INDEX_FILE" ]; then
+                  echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameProd).azurewebsites.net/api"
+                  perl -pe "s|<meta name=\"api-base-url\" content=\"\" */?>|<meta name=\"api-base-url\" content=\"https://$(webAppNameProd).azurewebsites.net/api\" />|g" -i "$INDEX_FILE" || true
+                else
+                  echo "Warning: $INDEX_FILE not found; skipping API base injection"
+                fi
 
                 echo "Uploading frontend files to $(frontendStorageAccountProd) (\$web) using connection string secret"
                 az storage blob upload-batch \

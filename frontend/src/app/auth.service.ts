@@ -3,7 +3,21 @@ import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 
-const API_BASE = '/api';
+// Resolve API base URL at runtime to support static hosting (Azure Storage) where
+// requests to `/api` would otherwise go to the static site origin (causing 405s).
+function getApiBase(): string {
+  try {
+    // Priority: window.__env.API_BASE -> <meta name="api-base-url"> -> default '/api'
+    const w: any = (window as any) || {};
+    if (w.__env && typeof w.__env.API_BASE === 'string' && w.__env.API_BASE.length) return w.__env.API_BASE;
+    const m = document.querySelector('meta[name="api-base-url"]') as HTMLMetaElement | null;
+    if (m && m.content && m.content.length) return m.content;
+  } catch {
+    // ignore
+  }
+  return '/api';
+}
+const API_BASE = getApiBase();
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
