@@ -7,6 +7,17 @@
          to point the SPA to the backend API (e.g. https://ai-poc-backend-dev.azurewebsites.net/api).
          Leaving it empty will default to '/api' which works when the SPA is served from the same origin as the API. -->
     <meta name="api-base-url" content="" />
+    <script>
+      (function(){
+        try {
+          window.__env = window.__env || {};
+          var m = document.querySelector('meta[name="api-base-url"]');
+          if (m && m.content && m.content.length) window.__env.API_BASE = m.content;
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
     <base href="/" />
     <title>Fleet Frontend</title>
   </head>
