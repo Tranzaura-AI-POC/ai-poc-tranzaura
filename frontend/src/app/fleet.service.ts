@@ -6,8 +6,6 @@ import { API_BASE } from './runtime-api';
 
 console.log('FleetService: resolved API_BASE =', API_BASE);
 
-import { API_BASE } from './runtime-api';
-
 @Injectable({ providedIn: 'root' })
 export class FleetService {
   constructor(private http: HttpClient) {}
