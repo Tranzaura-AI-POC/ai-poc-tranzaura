@@ -277,13 +277,13 @@ stages:
                     --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_DEV}" \
                     --static-website \
                     --index-document index.html \
-                    --404-document 404.html || true
+                    --404-document index.html || true
                 else
                   az storage blob service-properties update \
                     --account-name $(frontendStorageAccountDev) \
                     --static-website \
                     --index-document index.html \
-                    --404-document 404.html \
+                    --404-document index.html \
                     --auth-mode login || true
                 fi
 
@@ -414,13 +414,13 @@ stages:
                     --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_UAT}" \
                     --static-website \
                     --index-document index.html \
-                    --404-document 404.html || true
+                    --404-document index.html || true
                 else
                   az storage blob service-properties update \
                     --account-name $(frontendStorageAccountUat) \
                     --static-website \
                     --index-document index.html \
-                    --404-document 404.html \
+                    --404-document index.html \
                     --auth-mode login || true
                 fi
 
@@ -592,7 +592,7 @@ stages:
                     --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_PROD}" \
                     --static-website \
                     --index-document index.html \
-                    --404-document 404.html || true
+                    --404-document index.html || true
                 else
                   az storage blob service-properties update \
                     --account-name $(frontendStorageAccountProd) \
