@@ -198,6 +198,8 @@ $env:ASPNETCORE_URLS = 'https://localhost:5001;http://localhost:5000'
 dotnet run --project backend
 ```
 
+CI trigger: small README update to start Azure Pipelines build.
+
 Notes:
 - Use `FORCE_HTTPS` locally only when you have a trusted dev certificate installed (see step 1). For CI or shared runners, prefer issuing real certificates or running tests against a test environment that already exposes HTTPS.
 - `FORCE_HTTPS` is intended for local parity and debugging; do not skip certificate validation in tests or production.
