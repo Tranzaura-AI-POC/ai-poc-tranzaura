@@ -226,7 +226,7 @@ stages:
                   exit 0
                 fi
 
-                set -euo pipefail
+                set -eo pipefail
                 echo "Changing to repository sources directory: $(Build.SourcesDirectory)"
                 cd "$(Build.SourcesDirectory)"
 
@@ -267,7 +267,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                set -euo pipefail
+                set -eo pipefail
                 echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountDev)"
                 # Enable static website (idempotent) which ensures $web is available
                 az storage blob service-properties update \
@@ -283,7 +283,7 @@ stages:
                   --account-name $(frontendStorageAccountDev) \
                   --auth-mode login || true
 
-                echo "Uploading frontend files to $(frontendStorageAccountDev) ($web)"
+                echo "Uploading frontend files to $(frontendStorageAccountDev) (\$web)"
                 az storage blob upload-batch \
                   --account-name $(frontendStorageAccountDev) \
                   --source $(Pipeline.Workspace)/frontend-dist \
@@ -313,7 +313,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                set -euo pipefail
+                set -eo pipefail
                 echo "Creating resource group $(resourceGroupUat) in $(location)"
                 az group create -n $(resourceGroupUat) -l $(location)
 
@@ -373,7 +373,7 @@ stages:
                   --account-name $(frontendStorageAccountUat) \
                   --auth-mode login || true
 
-                echo "Uploading frontend files to $(frontendStorageAccountUat) ($web)"
+                echo "Uploading frontend files to $(frontendStorageAccountUat) (\$web)"
                 az storage blob upload-batch \
                   --account-name $(frontendStorageAccountUat) \
                   --source $(Pipeline.Workspace)/frontend-dist \
@@ -525,7 +525,7 @@ stages:
                   --account-name $(frontendStorageAccountProd) \
                   --auth-mode login || true
 
-                echo "Uploading frontend files to $(frontendStorageAccountProd) ($web)"
+                echo "Uploading frontend files to $(frontendStorageAccountProd) (\$web)"
                 az storage blob upload-batch \
                   --account-name $(frontendStorageAccountProd) \
                   --source $(Pipeline.Workspace)/frontend-dist \
