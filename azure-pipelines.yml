@@ -317,7 +317,7 @@ stages:
                   INDEX_FILE="$(Pipeline.Workspace)/frontend-dist/index.html"
                   if [ -f "$INDEX_FILE" ]; then
                     echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameDev).azurewebsites.net/api"
-                    perl -pe "s|<meta\s+name=\"api-base-url\"\s+content(?:=\"[^\"]*\"|)?\s*/?>|<meta name=\"api-base-url\" content=\"https://$(webAppNameDev).azurewebsites.net/api\" />|gi" -i "$INDEX_FILE" || true
+                    perl -pe 's#<meta[^>]*name="api-base-url"[^>]*>#<meta name="api-base-url" content="https://$(webAppNameDev).azurewebsites.net/api" />#ig' -i "$INDEX_FILE" || true
                     echo "---- index.html preview (first 40 lines) ----"
                     head -n 40 "$INDEX_FILE" || true
                     echo "---- meta tag grep ----"
@@ -427,7 +427,7 @@ stages:
                 INDEX_FILE="$(Pipeline.Workspace)/frontend-dist/index.html"
                 if [ -f "$INDEX_FILE" ]; then
                   echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameUat).azurewebsites.net/api"
-                  perl -pe "s|<meta\s+name=\"api-base-url\"\s+content(?:=\"[^\"]*\"|)?\s*/?>|<meta name=\"api-base-url\" content=\"https://$(webAppNameUat).azurewebsites.net/api\" />|gi" -i "$INDEX_FILE" || true
+                  perl -pe 's#<meta[^>]*name="api-base-url"[^>]*>#<meta name="api-base-url" content="https://$(webAppNameUat).azurewebsites.net/api" />#ig' -i "$INDEX_FILE" || true
                   echo "---- index.html preview (first 40 lines) ----"
                   head -n 40 "$INDEX_FILE" || true
                   echo "---- meta tag grep ----"
@@ -599,7 +599,7 @@ stages:
                 INDEX_FILE="$(Pipeline.Workspace)/frontend-dist/index.html"
                 if [ -f "$INDEX_FILE" ]; then
                   echo "Patching API base meta in $INDEX_FILE -> https://$(webAppNameProd).azurewebsites.net/api"
-                  perl -pe "s|<meta\s+name=\"api-base-url\"\s+content(?:=\"[^\"]*\"|)?\s*/?>|<meta name=\"api-base-url\" content=\"https://$(webAppNameProd).azurewebsites.net/api\" />|gi" -i "$INDEX_FILE" || true
+                  perl -pe 's#<meta[^>]*name="api-base-url"[^>]*>#<meta name="api-base-url" content="https://$(webAppNameProd).azurewebsites.net/api" />#ig' -i "$INDEX_FILE" || true
                   echo "---- index.html preview (first 40 lines) ----"
                   head -n 40 "$INDEX_FILE" || true
                   echo "---- meta tag grep ----"
