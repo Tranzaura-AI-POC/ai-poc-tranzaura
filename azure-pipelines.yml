@@ -280,10 +280,18 @@ stages:
                   --auth-mode login || true
 
                 # Ensure $web container exists (create if missing)
-                az storage container create \
-                  --name '$web' \
-                  --account-name $(frontendStorageAccountDev) \
-                  --auth-mode login || true
+                # Prefer creating the $web container with the provided connection string (data-plane),
+                # fallback to AAD auth if the connection string isn't available.
+                if [ -n "${FRONTEND_STORAGE_CONNECTION_STRING_DEV:-}" ]; then
+                  az storage container create \
+                    --name '$web' \
+                    --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_DEV}" || true
+                else
+                  az storage container create \
+                    --name '$web' \
+                    --account-name $(frontendStorageAccountDev) \
+                    --auth-mode login || true
+                fi
 
                 # Fail early with a clear message if the connection string secret isn't provided
                 # Debug: indicate whether the secret env var is present (we won't print the value)
