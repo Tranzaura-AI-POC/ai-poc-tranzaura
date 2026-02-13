@@ -214,6 +214,8 @@ stages:
               version: '8.0.x'
           - task: AzureCLI@2
             displayName: 'Run DB migrations (optional)'
+            env:
+              FLEET_CONNECTION_STRING: $(FLEET_CONNECTION_STRING)
             inputs:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               scriptType: 'bash'
@@ -248,6 +250,19 @@ stages:
               azureSubscription: 'Tranzaura-AI-POC-Azure'
               appName: '$(backendAppNameDev)'
               package: '$(Pipeline.Workspace)/backend-drop'
+
+          - task: AzureCLI@2
+            displayName: 'Set App Service app settings for DB and migrations'
+            inputs:
+              azureSubscription: 'Tranzaura-AI-POC-Azure'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                echo "Setting App Service app settings: FLEET_CONNECTION_STRING, APPLY_MIGRATIONS, ENABLE_SEEDING"
+                az webapp config appsettings set \
+                  --name $(backendAppNameDev) \
+                  --resource-group $(resourceGroupDev) \
+                  --settings FLEET_CONNECTION_STRING="$(FLEET_CONNECTION_STRING)" APPLY_MIGRATIONS=true ENABLE_SEEDING=true
 
   - deployment: DeployFrontendDev
     displayName: Deploy frontend to Static Website (dev)
