@@ -2,7 +2,14 @@
 # Stages: Build -> Deploy-Dev -> Deploy-UAT -> Deploy-Prod
 # NOTE: Fill pipeline variables (service connection names, app names, storage account, resource group)
 
+-
+# Azure Pipelines CI/CD for ai-poc-tranzaura
+# Stages: Build -> Deploy-Dev -> Deploy-UAT -> Deploy-Prod
+# NOTE: Fill pipeline variables (service connection names, app names, storage account, resource group)
+
 trigger:
+  branches:
+    include:
       - main
       - develop
 
@@ -15,8 +22,6 @@ variables:
     value: 'ai-poc-uat-rg'
   - name: resourceGroupProd
     value: 'ai-poc-prod-rg'
-  - name: project
-    value: 'ai-poc-tranzaura'
   - name: infraOwner
     value: 'team-name'
   - name: backendAppNameDev
@@ -92,7 +97,6 @@ stages:
       vmImage: 'ubuntu-latest'
     steps:
     - task: UsePythonVersion@0
-      inputs:
         versionSpec: '3.x'
     - script: |
         python -m pip install --upgrade pip
