@@ -44,6 +44,8 @@ variables:
     value: 'false'
   - name: deployProd
     value: 'false'
+  - name: runPlaywright
+    value: 'false'
   # Dev infra provisioning (set to 'true' to run Bicep deploy step)
   - name: provisionInfra
     value: 'false'
@@ -366,7 +368,54 @@ stages:
                     az storage blob list --account-name $(frontendStorageAccountDev) --container-name '$web' --auth-mode login --query "[?contains(name, 'main') || contains(name, 'styles')].name" -o tsv | while read -r b; do
                       az storage blob update --account-name $(frontendStorageAccountDev) --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' --auth-mode login || true
                     done
-                  fi
+-                  fi
+
+- stage: E2E_Dev
+  displayName: Run Playwright E2E (Dev)
+  dependsOn: Deploy_Dev
+  condition: and(succeeded(), eq(variables['runPlaywright'], 'true'))
+  jobs:
+  - job: PlaywrightDev
+    displayName: Playwright tests against Dev site
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '20.x'
+    - task: AzureCLI@2
+      name: ResolveEndpoint
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Resolve the frontend static website endpoint
+          ENDPOINT=$(az storage account show -n $(frontendStorageAccountDev) -g $(resourceGroupDev) --query "primaryEndpoints.web" -o tsv || echo "")
+          if [ -z "$ENDPOINT" ]; then
+            echo "ERROR: could not resolve frontend endpoint"
+            exit 1
+          fi
+          # strip trailing slash
+          ENDPOINT="${ENDPOINT%/}"
+          echo "##vso[task.setvariable variable=PLAYWRIGHT_BASE_URL]$ENDPOINT"
+    - script: |
+        echo "Running Playwright tests against $(PLAYWRIGHT_BASE_URL)"
+        cd frontend
+        npm ci
+        npx playwright install --with-deps
+        npx playwright test --reporter=html
+      displayName: 'Install & run Playwright'
+      env:
+        PLAYWRIGHT_BASE_URL: $(PLAYWRIGHT_BASE_URL)
+    - script: |
+        if [ -d frontend/playwright-report ]; then
+          mkdir -p $(Pipeline.Workspace)/playwright-report || true
+          cp -r frontend/playwright-report $(Pipeline.Workspace)/playwright-report || true
+        fi
+      displayName: 'Collect Playwright report'
+    - publish: $(Pipeline.Workspace)/playwright-report
+      artifact: playwright-report
 
 - stage: Deploy_UAT
   displayName: Deploy to UAT
