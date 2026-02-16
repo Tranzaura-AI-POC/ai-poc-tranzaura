@@ -8,7 +8,7 @@ if (!FLEET_USERNAME || !FLEET_PASSWORD) {
 }
 
 // Runtime endpoints
-const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'https://aipocstoragedev.z33.web.core.windows.net';
 const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
 
 // Helper: perform API login server-side using Playwright `request`, set token in localStorage

@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 const FLEET_PASSWORD = process.env.FLEET_PASSWORD;
 if (!FLEET_PASSWORD) throw new Error('FLEET_PASSWORD must be set in the environment for tests');
 
-const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'https://aipocstoragedev.z33.web.core.windows.net';
 
 test('signin page shows brand, inputs, toggle and strength meter', async ({ page }) => {
   await page.goto(`${BASE}/signin`);

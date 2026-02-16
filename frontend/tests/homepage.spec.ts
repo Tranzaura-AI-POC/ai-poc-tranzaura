@@ -6,7 +6,7 @@ const FLEET_PASSWORD = process.env.FLEET_PASSWORD;
 if (!FLEET_USERNAME || !FLEET_PASSWORD) throw new Error('FLEET_USERNAME and FLEET_PASSWORD must be set in the environment');
 
 // Runtime endpoints
-const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'https://aipocstoragedev.z33.web.core.windows.net';
 const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
 
 // Perform API login server-side using Playwright `request`, set token in localStorage
@@ -23,7 +23,7 @@ async function login(page, request) {
 
 test('homepage loads and shows lookups', async ({ page, request }) => {
   await login(page, request);
-  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'https://aipocstoragedev.z33.web.core.windows.net';
   await page.goto(`${BASE}/`);
   await page.waitForLoadState('networkidle');
   await expect(page).toHaveTitle(/Fleet Frontend|Fleet Service Scheduler/);

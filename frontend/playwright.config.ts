@@ -8,7 +8,7 @@ export default defineConfig({
   retries: 0,
   reporter: [['list']],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'https://aipocstoragedev.z33.web.core.windows.net',
     headless: true,
     viewport: { width: 1280, height: 800 },
     actionTimeout: 10000,

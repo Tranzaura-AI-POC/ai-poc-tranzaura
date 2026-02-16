@@ -6,33 +6,26 @@ const FLEET_PASSWORD = process.env.FLEET_PASSWORD;
 if (!FLEET_USERNAME || !FLEET_PASSWORD) throw new Error('FLEET_USERNAME and FLEET_PASSWORD must be set in the environment');
 
 // Runtime endpoints
-const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'https://aipocstoragedev.z33.web.core.windows.net';
 const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
 
 // Perform API login and set token in localStorage to avoid UI flakiness
-async function login(page) {
+async function login(page, request) {
   await page.goto(`${BASE}/`);
   const username = FLEET_USERNAME;
   const password = FLEET_PASSWORD;
-  const token = await page.evaluate(async (args) => {
-    const creds = args.creds;
-    const api = args.api;
-    const res = await fetch(`${api}/Auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: creds.username, password: creds.password })
-    });
-    if (!res.ok) return null;
+    const res = await request.post(`${API}/Auth/login`, { data: { username: FLEET_USERNAME, password: FLEET_PASSWORD } });
+    if (!res.ok()) throw new Error('Login failed: could not obtain token (request)');
     const json = await res.json();
-    localStorage.setItem('fleet_token', json.token);
-    return json.token;
-  }, { creds: { username, password }, api: API });
-  if (!token) throw new Error('Login failed: could not obtain token');
+    const token = json.token;
+    if (!token) throw new Error('Login failed: no token returned');
+    await page.evaluate((t) => localStorage.setItem('fleet_token', t), token);
+    return token;
 }
 
-test('homepage loads and shows lookups and inspection dropdown', async ({ page }) => {
-  await login(page);
-  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+test('homepage loads and shows lookups and inspection dropdown', async ({ page, request }) => {
+  await login(page, request);
+  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'https://aipocstoragedev.z33.web.core.windows.net';
   await page.goto(`${BASE}/`);
   await page.waitForLoadState('networkidle');
   await expect(page).toHaveTitle(/Fleet Frontend|Fleet Service Scheduler/);
