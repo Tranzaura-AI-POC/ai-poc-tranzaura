@@ -368,7 +368,7 @@ stages:
                     az storage blob list --account-name $(frontendStorageAccountDev) --container-name '$web' --auth-mode login --query "[?contains(name, 'main') || contains(name, 'styles')].name" -o tsv | while read -r b; do
                       az storage blob update --account-name $(frontendStorageAccountDev) --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' --auth-mode login || true
                     done
--                  fi
+                  fi
 
 - stage: E2E_Dev
   displayName: Run Playwright E2E (Dev)
