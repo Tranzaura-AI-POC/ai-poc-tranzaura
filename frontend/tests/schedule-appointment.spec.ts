@@ -10,29 +10,18 @@ const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
 const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
 
 // Reuse API login to set localStorage token
-async function login(page) {
+async function login(page, request) {
   await page.goto(`${BASE}/`);
-  const username = FLEET_USERNAME;
-  const password = FLEET_PASSWORD;
-  const token = await page.evaluate(async (args) => {
-    const creds = args.creds;
-    const api = args.api;
-    const res = await fetch(`${api}/Auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: creds.username, password: creds.password })
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    localStorage.setItem('fleet_token', json.token);
-    return json.token;
-  }, { creds: { username, password }, api: API });
-
-  if (!token) throw new Error('Login failed: could not obtain token');
+  const res = await request.post(`${API}/Auth/login`, { data: { username: FLEET_USERNAME, password: FLEET_PASSWORD } });
+  if (!res.ok()) throw new Error('Login failed: could not obtain token (request)');
+  const json = await res.json();
+  const token = json.token;
+  if (!token) throw new Error('Login failed: no token returned');
+  await page.evaluate((t) => localStorage.setItem('fleet_token', t), token);
 }
 
 test('schedule an appointment from homepage and save it', async ({ page }) => {
-  await login(page);
+  await login(page, request);
 
   // Debug: log token and capture outgoing POST request headers for troubleshooting 403
   const _token = await page.evaluate(() => localStorage.getItem('fleet_token'));
@@ -120,74 +109,51 @@ test('schedule an appointment from homepage and save it', async ({ page }) => {
   const notes = page.locator('textarea[aria-label="Notes"]');
   await notes.fill(uniqueNote);
 
-  // Create appointment via direct API POST using the test's token to avoid intermittent UI POST issues
-  const apiResult = await page.evaluate(async (args) => {
-    const { note, dateStr, yearStr, api } = args;
-    const token = localStorage.getItem('fleet_token');
-    const headers: any = { 'Content-Type': 'application/json' };
-    if (token) headers.Authorization = `Bearer ${token}`;
+  // Create appointment via direct API POST (server-side) using the test's token to avoid browser fetch/CORS
+  // Acquire token via request fixture login if available
+  const loginRes = await request.post(`${API}/Auth/login`, { data: { username: FLEET_USERNAME, password: FLEET_PASSWORD } });
+  if (!loginRes.ok()) throw new Error('Login failed during appointment creation');
+  const loginJson = await loginRes.json();
+  const token = loginJson.token;
+  const headers: any = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
-    // Resolve IDs for AssetType and ServiceCenter
-    const atsR = await fetch(`${api}/AssetTypes`, { headers });
-    if (!atsR.ok) return { ok: false, status: atsR.status, body: 'failed-to-get-asset-types' };
-    const ats = await atsR.json();
-    const scR = await fetch(`${api}/ServiceCenters`, { headers });
-    if (!scR.ok) return { ok: false, status: scR.status, body: 'failed-to-get-service-centers' };
-    const scs = await scR.json();
+  // Resolve lookups
+  const atsRes = await request.get(`${API}/AssetTypes`, { headers });
+  if (!atsRes.ok()) throw new Error('Failed to fetch AssetTypes');
+  const ats = await atsRes.json();
+  const scRes = await request.get(`${API}/ServiceCenters`, { headers });
+  if (!scRes.ok()) throw new Error('Failed to fetch ServiceCenters');
+  const scs = await scRes.json();
 
-    const payload = {
-      assetTypeId: (ats && ats[0] && ats[0].id) || 1,
-      serviceCenterId: (scs && scs[0] && scs[0].id) || 1,
-      appointmentDate: `${dateStr}T09:30:00`,
-      assetYear: parseInt(yearStr, 10),
-      assetMake: 'Ford',
-      notes: note
-    };
+  const payload = {
+    assetTypeId: (ats && ats[0] && ats[0].id) || 1,
+    serviceCenterId: (scs && scs[0] && scs[0].id) || 1,
+    appointmentDate: `${dateStr}T09:30:00`,
+    assetYear: parseInt(yearStr, 10),
+    assetMake: 'Ford',
+    notes: uniqueNote
+  };
 
-    const post = await fetch(`${api}/ServiceAppointments`, { method: 'POST', headers, body: JSON.stringify(payload) });
-    if (!post.ok) {
-      const txt = await post.text();
-      return { ok: false, status: post.status, body: txt };
-    }
-    const created = await post.json();
-    return { ok: true, status: post.status, body: created };
-  }, { note: uniqueNote, dateStr, yearStr, api: API });
-
-  if (!apiResult.ok) throw new Error(`Appointment API POST failed: ${apiResult.status} ${apiResult.body}`);
-
-  const created = apiResult.body as any;
+  const createRes = await request.post(`${API}/ServiceAppointments`, { data: payload, headers });
+  if (!createRes.ok()) {
+    const txt = await createRes.text();
+    throw new Error(`Appointment API POST failed: ${createRes.status()} ${txt}`);
+  }
+  const created = await createRes.json();
   const createdId = created && created.id;
 
   // Verify the created appointment exists in the list
-  const found = await page.evaluate(async (args) => {
-    const { note, createdId, api } = args;
-    const token = localStorage.getItem('fleet_token');
-    const headers: any = { 'Content-Type': 'application/json' };
-    if (token) headers.Authorization = `Bearer ${token}`;
-    const res = await fetch(`${api}/ServiceAppointments`, { headers });
-    if (!res.ok) return { found: false, list: `failed-to-list:${res.status}` };
-    const list = await res.json();
-    const match = (list || []).find((a: any) => (createdId && Number(a.id) === Number(createdId)) || a.notes === note || (a.notes || '').includes(note));
-    return { found: !!match, list };
-  }, { note: uniqueNote, createdId, api: API });
-
-  if (!found.found) {
-    console.log('Appointment POST response:', apiResult.status, JSON.stringify(apiResult.body));
-    console.log('ServiceAppointments list:', JSON.stringify(found.list, null, 2));
-  }
-
-  expect(found.found).toBeTruthy();
+  // Verify via API the created appointment exists
+  const listRes = await request.get(`${API}/ServiceAppointments`, { headers });
+  if (!listRes.ok()) throw new Error(`Failed to list appointments: ${listRes.status()}`);
+  const list = await listRes.json();
+  const match = (list || []).find((a: any) => (createdId && Number(a.id) === Number(createdId)) || a.notes === uniqueNote || (a.notes || '').includes(uniqueNote));
+  expect(!!match).toBeTruthy();
 
   // Cleanup: delete the created appointment
   if (createdId) {
     try {
-      await page.evaluate(async (args) => {
-        const { id, api } = args;
-        const token = localStorage.getItem('fleet_token');
-        const headers: any = { 'Content-Type': 'application/json' };
-        if (token) headers.Authorization = `Bearer ${token}`;
-        await fetch(`${api}/ServiceAppointments/${id}`, { method: 'DELETE', headers });
-      }, { id: createdId, api: API });
+      await request.delete(`${API}/ServiceAppointments/${createdId}`, { headers });
     } catch (e) {
       console.warn('Failed to cleanup created appointment', e);
     }
