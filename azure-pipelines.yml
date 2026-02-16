@@ -28,7 +28,7 @@ variables:
   - name: backendAppNameProd
     value: 'ai-poc-backend-prod'
   - name: frontendStorageAccountDev
-    value: 'aipocfrontendstoragedev'
+    value: 'aipocstoragedev'
   - name: frontendStorageAccountUat
     value: 'ai-poc-frontend-storage-uat'
   - name: frontendStorageAccountProd
@@ -398,6 +398,13 @@ stages:
           fi
           # strip trailing slash
           ENDPOINT="${ENDPOINT%/}"
+          echo "Resolved raw endpoint: $ENDPOINT"
+          # Safety: if a stale or incorrect storage account endpoint is present
+          # (e.g. aipocfrontendstoragedev), override to the known correct dev site.
+          if echo "$ENDPOINT" | grep -qi 'aipocfrontendstoragedev'; then
+            echo "Warning: detected deprecated frontend storage account in endpoint; overriding to aipocstoragedev"
+            ENDPOINT="https://aipocstoragedev.z33.web.core.windows.net"
+          fi
           echo "##vso[task.setvariable variable=PLAYWRIGHT_BASE_URL]$ENDPOINT"
           # Resolve backend API host and set API base for Playwright
           APP_HOSTNAME=$(az webapp show --name $(backendAppNameDev) --resource-group $(resourceGroupDev) --query defaultHostName -o tsv 2>/dev/null || echo "")
