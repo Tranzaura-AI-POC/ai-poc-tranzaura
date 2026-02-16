@@ -5,15 +5,19 @@ const FLEET_USERNAME = process.env.FLEET_USERNAME;
 const FLEET_PASSWORD = process.env.FLEET_PASSWORD;
 if (!FLEET_USERNAME || !FLEET_PASSWORD) throw new Error('FLEET_USERNAME and FLEET_PASSWORD must be set in the environment');
 
+// Runtime endpoints
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
+
 // Perform API login and set token in localStorage to avoid UI flakiness
 async function login(page) {
-  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
   await page.goto(`${BASE}/`);
   const username = FLEET_USERNAME;
   const password = FLEET_PASSWORD;
-  const token = await page.evaluate(async (creds) => {
-    const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
-    const res = await fetch(`${API}/Auth/login`, {
+  const token = await page.evaluate(async (args) => {
+    const creds = args.creds;
+    const api = args.api;
+    const res = await fetch(`${api}/Auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: creds.username, password: creds.password })
@@ -22,7 +26,7 @@ async function login(page) {
     const json = await res.json();
     localStorage.setItem('fleet_token', json.token);
     return json.token;
-  }, { username, password });
+  }, { creds: { username, password }, api: API });
   if (!token) throw new Error('Login failed: could not obtain token');
 }
 

@@ -7,14 +7,17 @@ if (!FLEET_USERNAME || !FLEET_PASSWORD) {
   throw new Error('FLEET_USERNAME and FLEET_PASSWORD must be set in the environment');
 }
 
+// Runtime endpoints
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
 // Helper: perform API login and set token in localStorage for UI interactions
 async function apiLogin(page) {
-  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
   await page.goto(`${BASE}/`);
   const username = FLEET_USERNAME;
   const password = FLEET_PASSWORD;
-  const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
-  const token = await page.evaluate(async (creds, api) => {
+  const token = await page.evaluate(async (args) => {
+    const creds = args.creds;
+    const api = args.api;
     const res = await fetch(`${api}/Auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -24,7 +27,7 @@ async function apiLogin(page) {
     const json = await res.json();
     localStorage.setItem('fleet_token', json.token);
     return json.token;
-  }, { username, password });
+  }, { creds: { username, password }, api: API });
   if (!token) throw new Error('Login failed: could not obtain token');
 }
 
