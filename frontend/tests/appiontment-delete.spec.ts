@@ -9,7 +9,8 @@ if (!FLEET_USERNAME || !FLEET_PASSWORD) {
 
 // Helper: perform API login and set token in localStorage for UI interactions
 async function apiLogin(page) {
-  await page.goto('http://127.0.0.1:4200/');
+  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+  await page.goto(`${BASE}/`);
   const username = FLEET_USERNAME;
   const password = FLEET_PASSWORD;
   const token = await page.evaluate(async (creds) => {
@@ -52,7 +53,7 @@ test('delete appointment removes item and is reflected in API', async ({ page, r
     const created = await createRes.json();
     const apptId = created.id;
 
-    await page.goto('http://127.0.0.1:4200/appointments');
+    await page.goto(`${BASE}/appointments`);
     await page.waitForLoadState('networkidle');
 
     // locate the card we just created

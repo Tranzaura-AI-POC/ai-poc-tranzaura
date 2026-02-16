@@ -7,7 +7,8 @@ if (!FLEET_USERNAME || !FLEET_PASSWORD) throw new Error('FLEET_USERNAME and FLEE
 
 // Perform API login and set token in localStorage to avoid UI flakiness
 async function login(page) {
-  await page.goto('http://127.0.0.1:4200/');
+  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+  await page.goto(`${BASE}/`);
   const username = FLEET_USERNAME;
   const password = FLEET_PASSWORD;
   const token = await page.evaluate(async (creds) => {
@@ -26,7 +27,8 @@ async function login(page) {
 
 test('homepage loads and shows lookups', async ({ page }) => {
   await login(page);
-  await page.goto('http://127.0.0.1:4200/');
+  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+  await page.goto(`${BASE}/`);
   await page.waitForLoadState('networkidle');
   await expect(page).toHaveTitle(/Fleet Frontend|Fleet Service Scheduler/);
 

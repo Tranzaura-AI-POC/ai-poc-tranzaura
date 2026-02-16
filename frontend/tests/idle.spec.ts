@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE = 'http://127.0.0.1:4200';
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
 
 test('idle logout triggers after override timeout', async ({ page }) => {
   // Set a short override timeout (5s) and a fake token
