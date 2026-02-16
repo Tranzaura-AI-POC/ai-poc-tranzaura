@@ -13,8 +13,9 @@ async function apiLogin(page) {
   await page.goto(`${BASE}/`);
   const username = FLEET_USERNAME;
   const password = FLEET_PASSWORD;
-  const token = await page.evaluate(async (creds) => {
-    const res = await fetch('http://127.0.0.1:5000/api/Auth/login', {
+  const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
+  const token = await page.evaluate(async (creds, api) => {
+    const res = await fetch(`${api}/Auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: creds.username, password: creds.password })
@@ -32,7 +33,7 @@ test('delete appointment removes item and is reflected in API', async ({ page, r
     await apiLogin(page);
 
     // Obtain API token and create an appointment to delete (isolated)
-    const loginRes = await request.post('http://127.0.0.1:5000/api/Auth/login', { data: { username: FLEET_USERNAME, password: FLEET_PASSWORD } });
+    const loginRes = await request.post(`${API}/Auth/login`, { data: { username: FLEET_USERNAME, password: FLEET_PASSWORD } });
     expect(loginRes.ok()).toBeTruthy();
     const loginJson = await loginRes.json();
     const token = loginJson.token;
@@ -45,7 +46,7 @@ test('delete appointment removes item and is reflected in API', async ({ page, r
     const d = String(dt.getDate()).padStart(2, '0');
     const dateToSet = `${y}-${m}-${d}`;
     const iso = new Date(dateToSet + 'T09:00:00').toISOString();
-    const createRes = await request.post('http://127.0.0.1:5000/api/ServiceAppointments', {
+    const createRes = await request.post(`${API}/ServiceAppointments`, {
       data: { assetTypeId: 1, serviceCenterId: 1, appointmentDate: iso, assetMake: 'E2E-Delete', assetYear: 2021, notes: 'to delete' },
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -79,7 +80,7 @@ test('delete appointment removes item and is reflected in API', async ({ page, r
     await page.waitForTimeout(500);
 
     // Verify via API the appointment id is no longer present
-    const apires = await request.get('http://127.0.0.1:5000/api/ServiceAppointments', { headers: { Authorization: `Bearer ${token}` } });
+    const apires = await request.get(`${API}/ServiceAppointments`, { headers: { Authorization: `Bearer ${token}` } });
     expect(apires.ok()).toBeTruthy();
     const apis = await apires.json();
 

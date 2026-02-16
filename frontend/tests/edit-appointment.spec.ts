@@ -7,14 +7,17 @@ if (!FLEET_USERNAME || !FLEET_PASSWORD) {
   throw new Error('FLEET_USERNAME and FLEET_PASSWORD must be set in the environment');
 }
 
+// Runtime endpoints
+const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
+const API = process.env.PLAYWRIGHT_API_URL ?? 'http://127.0.0.1:5000/api';
+
 // Helper: perform API login and set token in localStorage for UI interactions
 async function apiLogin(page) {
-  const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4200';
   await page.goto(`${BASE}/`);
   const username = FLEET_USERNAME;
   const password = FLEET_PASSWORD;
-  const token = await page.evaluate(async (creds) => {
-    const res = await fetch('http://127.0.0.1:5000/api/Auth/login', {
+  const token = await page.evaluate(async (creds, api) => {
+    const res = await fetch(`${api}/Auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: creds.username, password: creds.password })
@@ -23,7 +26,7 @@ async function apiLogin(page) {
     const json = await res.json();
     localStorage.setItem('fleet_token', json.token);
     return json.token;
-  }, { username, password });
+  }, { username, password }, API);
   if (!token) throw new Error('Login failed: could not obtain token');
 }
 
@@ -52,14 +55,14 @@ test('edit appointment updates backend and UI', async ({ page, request }) => {
     await apiLogin(page);
 
     // Obtain an API token for direct API operations
-    const loginRes = await request.post('http://127.0.0.1:5000/api/Auth/login', { data: { username: FLEET_USERNAME, password: FLEET_PASSWORD } });
+    const loginRes = await request.post(`${API}/Auth/login`, { data: { username: FLEET_USERNAME, password: FLEET_PASSWORD } });
     expect(loginRes.ok()).toBeTruthy();
     const loginJson = await loginRes.json();
     token = loginJson.token;
 
     // Fetch lookups to seed a new appointment
-    const atRes = await request.get('http://127.0.0.1:5000/api/AssetTypes', { headers: { Authorization: `Bearer ${token}` } });
-    const scRes = await request.get('http://127.0.0.1:5000/api/ServiceCenters', { headers: { Authorization: `Bearer ${token}` } });
+    const atRes = await request.get(`${API}/AssetTypes`, { headers: { Authorization: `Bearer ${token}` } });
+    const scRes = await request.get(`${API}/ServiceCenters`, { headers: { Authorization: `Bearer ${token}` } });
     const ats = (await atRes.json()) || [];
     const scs = (await scRes.json()) || [];
     const assetTypeId = (ats && ats.length > 0) ? ats[0].id : 1;
@@ -67,7 +70,7 @@ test('edit appointment updates backend and UI', async ({ page, request }) => {
 
     // create an appointment specifically for this test to avoid cross-test interference
     const iso = new Date(dateToSet + 'T' + timeToSet + ':00').toISOString();
-    const createRes = await request.post('http://127.0.0.1:5000/api/ServiceAppointments', {
+    const createRes = await request.post(`${API}/ServiceAppointments`, {
       data: {
         assetTypeId,
         serviceCenterId,
@@ -123,7 +126,7 @@ test('edit appointment updates backend and UI', async ({ page, request }) => {
     let target: any = null;
     const maxAttempts = 10;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const apires = await request.get('http://127.0.0.1:5000/api/ServiceAppointments', { headers: { Authorization: `Bearer ${token}` } });
+      const apires = await request.get(`${API}/ServiceAppointments`, { headers: { Authorization: `Bearer ${token}` } });
       expect(apires.ok()).toBeTruthy();
       apis = await apires.json();
       target = apis.find((a: any) => Number(a.id) === Number(createdId));
@@ -160,7 +163,7 @@ test('edit appointment updates backend and UI', async ({ page, request }) => {
     // cleanup the appointment we created for this test
     try {
       if (createdId && token) {
-        await request.delete(`http://127.0.0.1:5000/api/ServiceAppointments/${createdId}`, { headers: { Authorization: `Bearer ${token}` } });
+        await request.delete(`${API}/ServiceAppointments/${createdId}`, { headers: { Authorization: `Bearer ${token}` } });
       }
     } catch (e) {
       // ignore cleanup failures
