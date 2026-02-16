@@ -20,7 +20,7 @@ async function login(page, request) {
   await page.evaluate((t) => localStorage.setItem('fleet_token', t), token);
 }
 
-test('schedule an appointment from homepage and save it', async ({ page }) => {
+test('schedule an appointment from homepage and save it', async ({ page, request }) => {
   await login(page, request);
 
   // Debug: log token and capture outgoing POST request headers for troubleshooting 403
