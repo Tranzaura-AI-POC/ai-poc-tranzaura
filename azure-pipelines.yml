@@ -408,6 +408,8 @@ stages:
       displayName: 'Install & run Playwright'
       env:
         PLAYWRIGHT_BASE_URL: $(PLAYWRIGHT_BASE_URL)
+        FLEET_USERNAME: $(FLEET_USERNAME)
+        FLEET_PASSWORD: $(FLEET_PASSWORD)
     - script: |
         if [ -d frontend/playwright-report ]; then
           mkdir -p $(Pipeline.Workspace)/playwright-report || true
@@ -555,6 +557,8 @@ stages:
             displayName: 'Run Playwright e2e (UAT)'
             env:
               PLAYWRIGHT_BASE_URL: $(stagingFrontendUrl)
+              FLEET_USERNAME: $(FLEET_USERNAME)
+              FLEET_PASSWORD: $(FLEET_PASSWORD)
           - script: |
               chmod +x ./scripts/run-smoke-tests.sh || true
               export API_BASE_URL=$(stagingApiUrl)
