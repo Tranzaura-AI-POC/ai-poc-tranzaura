@@ -3,8 +3,6 @@
 # NOTE: Fill pipeline variables (service connection names, app names, storage account, resource group)
 
 trigger:
-  branches:
-    include:
       - main
       - develop
 
@@ -45,7 +43,7 @@ variables:
   - name: deployProd
     value: 'false'
   - name: runPlaywright
-    value: 'false'
+    value: 'true'
   # Dev infra provisioning (set to 'true' to run Bicep deploy step)
   - name: provisionInfra
     value: 'false'
