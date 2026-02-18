@@ -27,12 +27,6 @@ variables:
     value: 'ai-poc-backend-uat'
   - name: backendAppNameProd
     value: 'ai-poc-backend-prod'
-  - name: frontendStorageAccountDev
-    value: 'aipocstoragedev'
-  - name: frontendStorageAccountUat
-    value: 'ai-poc-frontend-storage-uat'
-  - name: frontendStorageAccountProd
-    value: 'ai-poc-frontend-storage-prod'
   - name: acrName
     value: ''
   - name: imageName
@@ -54,9 +48,9 @@ variables:
   - name: storageAccountNameDev
     value: 'aipocstoragedev'
   - name: storageAccountNameUat
-    value: 'ai-poc-storage-uat'
+    value: 'aipocstorageuat'
   - name: storageAccountNameProd
-    value: 'ai-poc-storage-prod'
+    value: 'aipocstorageprod'
   - name: webAppNameDev
     value: 'ai-poc-backend-dev'
   - name: webAppNameUat
@@ -287,7 +281,7 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 set -eo pipefail
-                echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountDev)"
+                echo "Ensuring static website settings and \$web container exist for $(storageAccountNameDev)"
                 # Enable static website (idempotent) which ensures $web is available
                 if [ -n "${FRONTEND_STORAGE_CONNECTION_STRING_DEV:-}" ]; then
                   az storage blob service-properties update \
@@ -297,7 +291,7 @@ stages:
                     --404-document index.html || true
                 else
                   az storage blob service-properties update \
-                    --account-name $(frontendStorageAccountDev) \
+                    --account-name $(storageAccountNameDev) \
                     --static-website \
                     --index-document index.html \
                     --404-document index.html \
@@ -314,7 +308,7 @@ stages:
                 else
                   az storage container create \
                     --name '$web' \
-                    --account-name $(frontendStorageAccountDev) \
+                    --account-name $(storageAccountNameDev) \
                     --auth-mode login || true
                 fi
 
@@ -349,7 +343,7 @@ stages:
                     echo "Warning: $INDEX_FILE not found; skipping API base injection"
                   fi
 
-                  echo "Uploading frontend files to $(frontendStorageAccountDev) (\$web) using connection string secret"
+                  echo "Uploading frontend files to $(storageAccountNameDev) (\$web) using connection string secret"
                 az storage blob upload-batch \
                   --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_DEV}" \
                   --source $(Pipeline.Workspace)/frontend-dist \
@@ -364,9 +358,9 @@ stages:
                     done
                   else
                     echo "Setting cache-control (AAD path)"
-                    az storage blob update --account-name $(frontendStorageAccountDev) --container-name '$web' --name index.html --content-cache-control 'no-cache, no-store, must-revalidate' --auth-mode login || true
-                    az storage blob list --account-name $(frontendStorageAccountDev) --container-name '$web' --auth-mode login --query "[?contains(name, 'main') || contains(name, 'styles')].name" -o tsv | while read -r b; do
-                      az storage blob update --account-name $(frontendStorageAccountDev) --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' --auth-mode login || true
+                    az storage blob update --account-name $(storageAccountNameDev) --container-name '$web' --name index.html --content-cache-control 'no-cache, no-store, must-revalidate' --auth-mode login || true
+                    az storage blob list --account-name $(storageAccountNameDev) --container-name '$web' --auth-mode login --query "[?contains(name, 'main') || contains(name, 'styles')].name" -o tsv | while read -r b; do
+                      az storage blob update --account-name $(storageAccountNameDev) --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' --auth-mode login || true
                     done
                   fi
 
@@ -391,7 +385,7 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
           # Resolve the frontend static website endpoint
-          ENDPOINT=$(az storage account show -n $(frontendStorageAccountDev) -g $(resourceGroupDev) --query "primaryEndpoints.web" -o tsv || echo "")
+          ENDPOINT=$(az storage account show -n $(storageAccountNameDev) -g $(resourceGroupDev) --query "primaryEndpoints.web" -o tsv || echo "")
           if [ -z "$ENDPOINT" ]; then
             echo "ERROR: could not resolve frontend endpoint"
             exit 1
@@ -502,7 +496,7 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 set -euo pipefail
-                echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountUat)"
+                echo "Ensuring static website settings and \$web container exist for $(storageAccountNameUat)"
                 if [ -n "${FRONTEND_STORAGE_CONNECTION_STRING_UAT:-}" ]; then
                   az storage blob service-properties update \
                     --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_UAT}" \
@@ -511,7 +505,7 @@ stages:
                     --404-document index.html || true
                 else
                   az storage blob service-properties update \
-                    --account-name $(frontendStorageAccountUat) \
+                    --account-name $(storageAccountNameUat) \
                     --static-website \
                     --index-document index.html \
                     --404-document index.html \
@@ -520,7 +514,7 @@ stages:
 
                 az storage container create \
                   --name '$web' \
-                  --account-name $(frontendStorageAccountUat) \
+                  --account-name $(storageAccountNameUat) \
                   --auth-mode login || true
 
                 # Inject runtime API base into the built index.html so the SPA calls the backend API
@@ -542,7 +536,7 @@ stages:
                   echo "Warning: $INDEX_FILE not found; skipping API base injection"
                 fi
 
-                echo "Uploading frontend files to $(frontendStorageAccountUat) (\$web) using connection string secret"
+                echo "Uploading frontend files to $(storageAccountNameUat) (\$web) using connection string secret"
                 az storage blob upload-batch \
                   --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_UAT}" \
                   --source $(Pipeline.Workspace)/frontend-dist \
@@ -555,9 +549,9 @@ stages:
                     az storage blob update --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_UAT}" --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' || true
                   done
                 else
-                  az storage blob update --account-name $(frontendStorageAccountUat) --container-name '$web' --name index.html --content-cache-control 'no-cache, no-store, must-revalidate' --auth-mode login || true
-                  az storage blob list --account-name $(frontendStorageAccountUat) --container-name '$web' --auth-mode login --query "[?contains(name, 'main') || contains(name, 'styles')].name" -o tsv | while read -r b; do
-                    az storage blob update --account-name $(frontendStorageAccountUat) --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' --auth-mode login || true
+                  az storage blob update --account-name $(storageAccountNameUat) --container-name '$web' --name index.html --content-cache-control 'no-cache, no-store, must-revalidate' --auth-mode login || true
+                  az storage blob list --account-name $(storageAccountNameUat) --container-name '$web' --auth-mode login --query "[?contains(name, 'main') || contains(name, 'styles')].name" -o tsv | while read -r b; do
+                    az storage blob update --account-name $(storageAccountNameUat) --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' --auth-mode login || true
                   done
                 fi
           - task: NodeTool@0
@@ -694,7 +688,7 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 set -euo pipefail
-                echo "Ensuring static website settings and \$web container exist for $(frontendStorageAccountProd)"
+                echo "Ensuring static website settings and \$web container exist for $(storageAccountNameProd)"
                 if [ -n "${FRONTEND_STORAGE_CONNECTION_STRING_PROD:-}" ]; then
                   az storage blob service-properties update \
                     --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_PROD}" \
@@ -703,7 +697,7 @@ stages:
                     --404-document index.html || true
                 else
                   az storage blob service-properties update \
-                    --account-name $(frontendStorageAccountProd) \
+                    --account-name $(storageAccountNameProd) \
                     --static-website \
                     --index-document index.html \
                     --404-document 404.html \
@@ -712,7 +706,7 @@ stages:
 
                 az storage container create \
                   --name '$web' \
-                  --account-name $(frontendStorageAccountProd) \
+                  --account-name $(storageAccountNameProd) \
                   --auth-mode login || true
 
                 # Inject runtime API base into the built index.html so the SPA calls the backend API
@@ -734,7 +728,7 @@ stages:
                   echo "Warning: $INDEX_FILE not found; skipping API base injection"
                 fi
 
-                echo "Uploading frontend files to $(frontendStorageAccountProd) (\$web) using connection string secret"
+                echo "Uploading frontend files to $(storageAccountNameProd) (\$web) using connection string secret"
                 az storage blob upload-batch \
                   --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_PROD}" \
                   --source $(Pipeline.Workspace)/frontend-dist \
@@ -747,14 +741,14 @@ stages:
                     az storage blob update --connection-string "${FRONTEND_STORAGE_CONNECTION_STRING_PROD}" --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' || true
                   done
                 else
-                  az storage blob update --account-name $(frontendStorageAccountProd) --container-name '$web' --name index.html --content-cache-control 'no-cache, no-store, must-revalidate' --auth-mode login || true
-                  az storage blob list --account-name $(frontendStorageAccountProd) --container-name '$web' --auth-mode login --query "[?contains(name, 'main') || contains(name, 'styles')].name" -o tsv | while read -r b; do
-                    az storage blob update --account-name $(frontendStorageAccountProd) --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' --auth-mode login || true
+                  az storage blob update --account-name $(storageAccountNameProd) --container-name '$web' --name index.html --content-cache-control 'no-cache, no-store, must-revalidate' --auth-mode login || true
+                  az storage blob list --account-name $(storageAccountNameProd) --container-name '$web' --auth-mode login --query "[?contains(name, 'main') || contains(name, 'styles')].name" -o tsv | while read -r b; do
+                    az storage blob update --account-name $(storageAccountNameProd) --container-name '$web' --name "$b" --content-cache-control 'public, max-age=31536000, immutable' --auth-mode login || true
                   done
                 fi
 
 # Notes:
-# - Set pipeline variables (azureSubscription, resourceGroup, backendAppName, frontendStorageAccount, acrName) in the pipeline UI or use a variable group linked to Key Vault.
+# - Set pipeline variables (azureSubscription, resourceGroup, backendAppName, storageAccountName, acrName) in the pipeline UI or use a variable group linked to Key Vault.
 # - Consider replacing frontend Storage Account deployment with Azure Static Web Apps or CDN depending on requirements.
 # - Use Azure Key Vault task or variable group to inject secrets (DB connection string, Key Vault secrets) into the pipeline securely.
 # - Configure environment approvals/gates in Azure DevOps for 'uat' and 'prod' environments.
