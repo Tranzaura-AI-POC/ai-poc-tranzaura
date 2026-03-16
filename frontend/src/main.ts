@@ -10,6 +10,7 @@ import { TrainingComponent } from './app/training.component';
 import { provideRouter } from '@angular/router';
 import { HomepageComponent } from './app/homepage.component';
 import { AppointmentsComponent } from './app/appointments.component';
+import { WorkshopComponent } from './app/workshop.component';
 import { SigninComponent } from './app/signin.component';
 import { authGuard } from './app/auth.guard';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -21,6 +22,7 @@ bootstrapApplication(AppComponent, {
     provideRouter([
       { path: '', component: HomepageComponent, canActivate: [authGuard] },
       { path: 'appointments', component: AppointmentsComponent, canActivate: [authGuard] },
+      { path: 'workshop', component: WorkshopComponent, canActivate: [authGuard] },
       { path: 'docs', component: DocsComponent, canActivate: [authGuard], data: { roles: ['admin'] } },
       { path: 'training', component: TrainingComponent },
       { path: 'forbidden', component: ForbiddenComponent },
